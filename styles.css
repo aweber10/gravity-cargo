@@ -1,0 +1,149 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #000;
+    font-family: 'Courier New', monospace;
+    overflow: hidden;
+    touch-action: none;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#gameCanvas {
+    display: block;
+    background: #000;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+#hud {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    color: #fff;
+    font-size: 18px;
+    text-shadow: 2px 2px 4px #000;
+}
+
+#top-bar {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#score {
+    font-size: 24px;
+    letter-spacing: 2px;
+}
+
+#lives {
+    display: flex;
+    gap: 10px;
+}
+
+.life-icon {
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 14px solid #ccc;
+}
+
+#bottom-bar {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+#fuel-container {
+    flex: 1;
+    height: 25px;
+    background: #222;
+    border: 2px solid #fff;
+    position: relative;
+}
+
+#fuel-bar {
+    height: 100%;
+    background: #0f0;
+    transition: width 0.1s linear, background-color 0.3s;
+}
+
+#fuel-bar.low {
+    background: #ff0;
+}
+
+#fuel-bar.critical {
+    background: #f00;
+}
+
+#target-platform {
+    font-size: 20px;
+    letter-spacing: 1px;
+    min-width: 150px;
+}
+
+#mobile-thrust {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: 3px solid #fff;
+    color: #fff;
+    font-size: 14px;
+    font-weight: bold;
+    pointer-events: auto;
+    touch-action: none;
+    cursor: pointer;
+}
+
+#mobile-thrust:active {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+#mobile-pause {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid #fff;
+    color: #fff;
+    font-size: 24px;
+    font-weight: bold;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    #mobile-thrust,
+    #mobile-pause {
+        display: block !important;
+    }
+}

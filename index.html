@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-fullscreen">
+    <title>Gravity Cargo</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="hud">
+            <div id="top-bar">
+                <div id="score">SCORE: 00</div>
+                <div id="lives"></div>
+            </div>
+            <div id="bottom-bar">
+                <div id="fuel-container">
+                    <div id="fuel-bar"></div>
+                </div>
+                <div id="target-platform">TARGET: --</div>
+            </div>
+        </div>
+        <button id="mobile-thrust" style="display: none;">THRUST</button>
+        <button id="mobile-pause" style="display: none;">II</button>
+    </div>
+    
+    <script src="game.js"></script>
+</body>
+</html>
