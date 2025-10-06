@@ -10,11 +10,6 @@ Gravity Cargo ist ein physikbasiertes 2D-Raumschiff-Spiel im Retro-Stil, inspiri
 - Primäre Zielgeräte: iPhone 13, 14, 16
 - Führendes Design: iPhone 13
 
-### 1.3 Credits
-- Idee: Andreas Weber
-- Spec-Engineering: Claude Sonnet 4.5
-- Implementierung: Claude Code
-
 ---
 
 ## 2. Kern-Gameplay
