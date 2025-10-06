@@ -58,6 +58,15 @@ const menu = {
     ]
 };
 
+const pauseMenu = {
+    selectedOption: 0,
+    options: [
+        { id: 'resume', label: 'FORTSETZEN', bounds: null },
+        { id: 'restart', label: 'NEUSTART LEVEL', bounds: null },
+        { id: 'mainmenu', label: 'HAUPTMENÜ', bounds: null }
+    ]
+};
+
 function saveGameState() {
     const saveData = {
         level: game.level,
@@ -105,6 +114,58 @@ function initMenu() {
     // Setze selectedOption auf ersten aktivierten Eintrag
     menu.selectedOption = menu.options.findIndex(o => o.enabled);
     if (menu.selectedOption === -1) menu.selectedOption = 0;
+}
+
+function togglePause() {
+    if (game.state === 'playing') {
+        game.state = 'paused';
+        pauseMenu.selectedOption = 0;
+        playSound('menuSelect');
+    } else if (game.state === 'paused') {
+        game.state = 'playing';
+        playSound('menuSelect');
+    }
+}
+
+function handlePauseMenuSelection() {
+    const selectedOption = pauseMenu.options[pauseMenu.selectedOption];
+    
+    playSound('menuSelect');
+    
+    switch (selectedOption.id) {
+        case 'resume':
+            game.state = 'playing';
+            break;
+        case 'restart':
+            restartLevel();
+            break;
+        case 'mainmenu':
+            saveGameState();
+            initMenu();
+            break;
+    }
+}
+
+function restartLevel() {
+    game.lives = 3;
+    game.currentCargo = null;
+    game.deliveredCargo = 0;
+    initLevel();
+    game.state = 'playing';
+}
+
+function getPauseMenuOptionAtPosition(x, y) {
+    for (let i = 0; i < pauseMenu.options.length; i++) {
+        const option = pauseMenu.options[i];
+        if (option.bounds) {
+            const b = option.bounds;
+            if (x >= b.x && x <= b.x + b.width && 
+                y >= b.y && y <= b.y + b.height) {
+                return i;
+            }
+        }
+    }
+    return -1;
 }
 
 const ship = {
@@ -412,6 +473,31 @@ function initLevel() {
 }
 
 document.addEventListener('keydown', (e) => {
+    if ((e.key === 'Escape' || e.key === 'p' || e.key === 'P') && 
+        (game.state === 'playing' || game.state === 'paused')) {
+        e.preventDefault();
+        togglePause();
+        return;
+    }
+    
+    if (game.state === 'paused') {
+        if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+            e.preventDefault();
+            pauseMenu.selectedOption = Math.max(0, pauseMenu.selectedOption - 1);
+            playSound('menuMove');
+        }
+        if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+            e.preventDefault();
+            pauseMenu.selectedOption = Math.min(pauseMenu.options.length - 1, pauseMenu.selectedOption + 1);
+            playSound('menuMove');
+        }
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handlePauseMenuSelection();
+        }
+        return;
+    }
+    
     if (game.state === 'menu') {
         if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
             e.preventDefault();
@@ -465,6 +551,14 @@ thrustButton.addEventListener('touchend', (e) => {
     keys.up = false;
 });
 
+const pauseButton = document.getElementById('mobile-pause');
+pauseButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (game.state === 'playing' || game.state === 'paused') {
+        togglePause();
+    }
+});
+
 canvas.addEventListener('touchstart', (e) => {
     if (game.state === 'menu') {
         const touch = e.touches[0];
@@ -476,6 +570,20 @@ canvas.addEventListener('touchstart', (e) => {
         if (selectedOption !== -1 && menu.options[selectedOption].enabled) {
             menu.selectedOption = selectedOption;
             handleMenuSelection();
+        }
+        return;
+    }
+    
+    if (game.state === 'paused') {
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        const touchX = touch.clientX - rect.left;
+        const touchY = touch.clientY - rect.top;
+        
+        const selectedOption = getPauseMenuOptionAtPosition(touchX, touchY);
+        if (selectedOption !== -1) {
+            pauseMenu.selectedOption = selectedOption;
+            handlePauseMenuSelection();
         }
         return;
     }
@@ -503,6 +611,18 @@ canvas.addEventListener('click', (e) => {
         if (selectedOption !== -1 && menu.options[selectedOption].enabled) {
             menu.selectedOption = selectedOption;
             handleMenuSelection();
+        }
+    }
+    
+    if (game.state === 'paused') {
+        const rect = canvas.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
+        
+        const selectedOption = getPauseMenuOptionAtPosition(clickX, clickY);
+        if (selectedOption !== -1) {
+            pauseMenu.selectedOption = selectedOption;
+            handlePauseMenuSelection();
         }
     }
 });
@@ -567,6 +687,8 @@ function update(dt) {
             game.particles.splice(i, 1);
         }
     }
+    
+    if (game.state === 'paused') return;
     
     if (game.state !== 'playing') return;
     
@@ -755,6 +877,52 @@ function updateUI() {
     document.getElementById('target-platform').textContent = targetText;
 }
 
+function renderPauseScreen() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 64px "Courier New"';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('PAUSED', canvas.width / 2, canvas.height / 4);
+    
+    const startY = canvas.height / 2;
+    const spacing = 70;
+    
+    pauseMenu.options.forEach((option, index) => {
+        const y = startY + index * spacing;
+        
+        const isSelected = index === pauseMenu.selectedOption;
+        const buttonWidth = 280;
+        const buttonHeight = 50;
+        const buttonX = canvas.width / 2 - buttonWidth / 2;
+        const buttonY = y - buttonHeight / 2;
+        
+        if (isSelected) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
+        }
+        
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(buttonX, buttonY, buttonWidth, buttonHeight);
+        
+        ctx.font = '22px "Courier New"';
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(option.label, canvas.width / 2, y);
+        
+        option.bounds = { x: buttonX, y: buttonY, width: buttonWidth, height: buttonHeight };
+    });
+    
+    ctx.font = '16px "Courier New"';
+    ctx.fillStyle = '#888';
+    ctx.textAlign = 'center';
+    ctx.fillText('ESC/P zum Fortsetzen', canvas.width / 2, canvas.height - 40);
+}
+
 function renderMenu() {
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -915,6 +1083,10 @@ function render() {
     ctx.globalAlpha = 1.0;
     
     ctx.restore();
+    
+    if (game.state === 'paused') {
+        renderPauseScreen();
+    }
 }
 
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
