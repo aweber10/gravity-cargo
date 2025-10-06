@@ -46,7 +46,8 @@ const game = {
     deliveredCargo: 0,
     lastLandedPlatform: null,
     particles: [],
-    explosionTime: 0
+    explosionTime: 0,
+    levelStartScore: 0
 };
 
 const menu = {
@@ -147,6 +148,7 @@ function handlePauseMenuSelection() {
 }
 
 function restartLevel() {
+    game.score = game.levelStartScore;
     game.lives = 3;
     game.currentCargo = null;
     game.deliveredCargo = 0;
@@ -461,6 +463,7 @@ function initLevel() {
     game.currentCargo = null;
     game.deliveredCargo = 0;
     game.lives = 3;
+    game.levelStartScore = game.score;
     
     const startPlatform = currentLevel.platforms.find(p => p.id === currentLevel.startPlatform);
     ship.x = startPlatform.position[0] + startPlatform.width / 2;
