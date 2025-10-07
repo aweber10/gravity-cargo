@@ -351,16 +351,26 @@ canvas.addEventListener('touchstart', (e) => {
         return;
     }
     
-    if (e.target === canvas) {
+    if (game.state === 'playing' && e.target === canvas) {
         const touch = e.touches[0];
         const rect = canvas.getBoundingClientRect();
         const touchX = touch.clientX - rect.left;
-        const touchY = touch.clientY - rect.top;
         
-        const dx = touchX - ship.x;
-        const dy = touchY - ship.y;
-        const targetAngle = Math.atan2(dy, dx) + Math.PI / 2;
-        ship.angle = targetAngle;
+        // Bestimme ob links oder rechts vom Schiff getippt wurde
+        if (touchX < ship.x - 20) {
+            keys.left = true;
+            keys.right = false;
+        } else if (touchX > ship.x + 20) {
+            keys.right = true;
+            keys.left = false;
+        }
+    }
+});
+
+canvas.addEventListener('touchend', (e) => {
+    if (game.state === 'playing') {
+        keys.left = false;
+        keys.right = false;
     }
 });
 
