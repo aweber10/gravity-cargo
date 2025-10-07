@@ -1,7 +1,7 @@
 // Imports
-import { PHYSICS } from './config.js';
-import { levelTemplates, calculateMaxScore } from './levels.js';
-import { playSound } from './audio.js';
+import { PHYSICS } from './config.js?v=2';
+import { levelTemplates, calculateMaxScore } from './levels.js?v=2';
+import { playSound } from './audio.js?v=2';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -565,7 +565,33 @@ function updateTouchControls() {
         
         // Deadzone um das Schiff - nur bei ausreichender Entfernung reagieren
         if (distance > 30) {
-            ship.angle = Math.atan2(dx, dy) + Math.PI / 2;
+            // Berechne Zielwinkel
+            const targetAngle = Math.atan2(dx, dy) + Math.PI / 2;
+            
+            // Normalisiere beide Winkel auf -PI bis PI
+            let currentAngle = ship.angle % (Math.PI * 2);
+            if (currentAngle > Math.PI) currentAngle -= Math.PI * 2;
+            else if (currentAngle < -Math.PI) currentAngle += Math.PI * 2;
+            
+            let normalizedTarget = targetAngle % (Math.PI * 2);
+            if (normalizedTarget > Math.PI) normalizedTarget -= Math.PI * 2;
+            else if (normalizedTarget < -Math.PI) normalizedTarget += Math.PI * 2;
+            
+            // Berechne kürzesten Weg zum Zielwinkel
+            let angleDiff = normalizedTarget - currentAngle;
+            if (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+            else if (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+            
+            // Drehe sanft in die richtige Richtung (wie mit Pfeiltasten)
+            const rotationSpeed = PHYSICS.rotationSpeed * 0.016; // ~60fps
+            if (Math.abs(angleDiff) > 0.05) { // Kleine Toleranz
+                if (angleDiff > 0) {
+                    ship.angle += Math.min(rotationSpeed, angleDiff);
+                } else {
+                    ship.angle -= Math.min(rotationSpeed, -angleDiff);
+                }
+            }
+            
             keys.up = true;
         } else {
             keys.up = false;
