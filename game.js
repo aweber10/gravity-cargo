@@ -1,7 +1,7 @@
 // Imports
-import { PHYSICS } from './config.js?v=2';
-import { levelTemplates, calculateMaxScore } from './levels.js?v=2';
-import { playSound } from './audio.js?v=2';
+import { PHYSICS } from './config.js?v=3';
+import { levelTemplates, calculateMaxScore } from './levels.js?v=3';
+import { playSound } from './audio.js?v=3';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -565,8 +565,9 @@ function updateTouchControls() {
         
         // Deadzone um das Schiff - nur bei ausreichender Entfernung reagieren
         if (distance > 30) {
-            // Berechne Zielwinkel
-            const targetAngle = Math.atan2(dx, dy) + Math.PI / 2;
+            // Berechne Zielwinkel - WICHTIG: atan2(dy, dx) für korrekten Winkel!
+            // Das Schiff zeigt bei angle=0 nach oben, daher - Math.PI/2
+            const targetAngle = Math.atan2(dy, dx) - Math.PI / 2;
             
             // Normalisiere beide Winkel auf -PI bis PI
             let currentAngle = ship.angle % (Math.PI * 2);
