@@ -6,7 +6,16 @@ import { playSound } from './audio.js';
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+                 ('ontouchstart' in window) ||
+                 (navigator.maxTouchPoints > 0);
+
+// Touch State für neue Ein-Finger-Steuerung
+const touchState = {
+    active: false,
+    x: 0,
+    y: 0
+};
 
 function resizeCanvas() {
     if (isMobile) {
@@ -304,15 +313,6 @@ document.addEventListener('keyup', (e) => {
     if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') keys.up = false;
 });
 
-const thrustButton = document.getElementById('mobile-thrust');
-thrustButton.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    keys.up = true;
-});
-thrustButton.addEventListener('touchend', (e) => {
-    e.preventDefault();
-    keys.up = false;
-});
 
 const pauseButton = document.getElementById('mobile-pause');
 pauseButton.addEventListener('click', (e) => {
@@ -322,7 +322,10 @@ pauseButton.addEventListener('click', (e) => {
     }
 });
 
-canvas.addEventListener('touchstart', (e) => {
+// Neue Touch Event Handler
+function handleTouchStart(e) {
+    e.preventDefault();
+    
     if (game.state === 'menu') {
         const touch = e.touches[0];
         const rect = canvas.getBoundingClientRect();
@@ -351,28 +354,35 @@ canvas.addEventListener('touchstart', (e) => {
         return;
     }
     
-    if (game.state === 'playing' && e.target === canvas) {
+    if (game.state === 'playing' && isMobile) {
         const touch = e.touches[0];
         const rect = canvas.getBoundingClientRect();
-        const touchX = touch.clientX - rect.left;
-        
-        // Bestimme ob links oder rechts vom Schiff getippt wurde
-        if (touchX < ship.x - 20) {
-            keys.left = true;
-            keys.right = false;
-        } else if (touchX > ship.x + 20) {
-            keys.right = true;
-            keys.left = false;
-        }
+        touchState.x = touch.clientX - rect.left;
+        touchState.y = touch.clientY - rect.top;
+        touchState.active = true;
     }
-});
+}
 
-canvas.addEventListener('touchend', (e) => {
-    if (game.state === 'playing') {
-        keys.left = false;
-        keys.right = false;
+function handleTouchMove(e) {
+    e.preventDefault();
+    
+    if (touchState.active && game.state === 'playing') {
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        touchState.x = touch.clientX - rect.left;
+        touchState.y = touch.clientY - rect.top;
     }
-});
+}
+
+function handleTouchEnd(e) {
+    e.preventDefault();
+    touchState.active = false;
+}
+
+canvas.addEventListener('touchstart', handleTouchStart);
+canvas.addEventListener('touchmove', handleTouchMove);
+canvas.addEventListener('touchend', handleTouchEnd);
+canvas.addEventListener('touchcancel', handleTouchEnd);
 
 canvas.addEventListener('click', (e) => {
     if (game.state === 'menu') {
@@ -474,6 +484,11 @@ function updateShipRotation(dt) {
         return;
     }
     
+    // Auf Mobile wird die Rotation durch Touch-Steuerung übernommen
+    if (isMobile && touchState.active) {
+        return;
+    }
+    
     if (keys.left) {
         ship.angle -= PHYSICS.rotationSpeed * dt;
     }
@@ -542,12 +557,31 @@ function updateShipPosition(dt) {
     ship.y += ship.vy;
 }
 
+function updateTouchControls() {
+    if (touchState.active && isMobile && !ship.settling) {
+        const dx = touchState.x - ship.x;
+        const dy = touchState.y - ship.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // Deadzone um das Schiff - nur bei ausreichender Entfernung reagieren
+        if (distance > 30) {
+            ship.angle = Math.atan2(dx, dy) + Math.PI / 2;
+            keys.up = true;
+        } else {
+            keys.up = false;
+        }
+    } else if (isMobile && !touchState.active) {
+        keys.up = false;
+    }
+}
+
 function update(dt) {
     updateParticles(dt);
     
     if (game.state === 'paused') return;
     if (game.state !== 'playing') return;
     
+    updateTouchControls();
     updateShipSettling(dt);
     updateShipRotation(dt);
     updateShipThrust(dt);
@@ -839,6 +873,21 @@ function renderGameWonInstructions() {
     ctx.fillText('ENTER für Hauptmenü', canvas.width / 2, canvas.height - 40);
 }
 
+function renderTouchIndicator() {
+    if (touchState.active && isMobile) {
+        ctx.save();
+        ctx.setLineDash([5, 5]);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(ship.x, ship.y);
+        ctx.lineTo(touchState.x, touchState.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+    }
+}
+
 function renderGameWon() {
     renderGameWonBackground();
     renderGameWonTitle();
@@ -1010,6 +1059,11 @@ function render() {
         ctx.fill();
     }
     ctx.globalAlpha = 1.0;
+    
+    // Touch-Feedback anzeigen
+    if (game.state === 'playing') {
+        renderTouchIndicator();
+    }
     
     ctx.restore();
     
