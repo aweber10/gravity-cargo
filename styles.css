@@ -105,26 +105,6 @@ body {
     min-width: 150px;
 }
 
-#mobile-thrust {
-    position: absolute;
-    bottom: 30px;
-    right: 30px;
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
-    border: 3px solid #fff;
-    color: #fff;
-    font-size: 14px;
-    font-weight: bold;
-    pointer-events: auto;
-    touch-action: none;
-    cursor: pointer;
-}
-
-#mobile-thrust:active {
-    background: rgba(255, 255, 255, 0.4);
-}
 
 #mobile-pause {
     position: absolute;
@@ -142,7 +122,6 @@ body {
 }
 
 @media (max-width: 768px) {
-    #mobile-thrust,
     #mobile-pause {
         display: block !important;
     }
