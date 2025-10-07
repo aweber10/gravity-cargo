@@ -1,7 +1,7 @@
 // Imports
-import { PHYSICS } from './config.js?v=5';
-import { levelTemplates, calculateMaxScore } from './levels.js?v=5';
-import { playSound } from './audio.js?v=5';
+import { PHYSICS } from './config.js?v=6';
+import { levelTemplates, calculateMaxScore } from './levels.js?v=6';
+import { playSound } from './audio.js?v=6';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -484,10 +484,7 @@ function updateShipRotation(dt) {
         return;
     }
     
-    // Auf Mobile wird die Rotation durch Touch-Steuerung übernommen
-    if (isMobile && touchState.active) {
-        return;
-    }
+    // Touch-Steuerung setzt keys.left/right, also keine Sonderbehandlung nötig
     
     if (keys.left) {
         ship.angle -= PHYSICS.rotationSpeed * dt;
@@ -568,7 +565,7 @@ function updateTouchControls(dt) {
             // Berechne Zielwinkel
             const targetAngle = Math.atan2(dx, dy);
             
-            // Normalisiere beide Winkel auf -PI bis PI
+            // Normalisiere aktuellen Winkel auf -PI bis PI
             let currentAngle = ship.angle % (Math.PI * 2);
             if (currentAngle > Math.PI) currentAngle -= Math.PI * 2;
             else if (currentAngle < -Math.PI) currentAngle += Math.PI * 2;
@@ -582,23 +579,27 @@ function updateTouchControls(dt) {
             if (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
             else if (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
             
-            // Drehe sanft in die richtige Richtung mit dt
-            const maxRotation = PHYSICS.rotationSpeed * dt;
+            // Setze keys basierend auf der Differenz - genau wie Tastatur-Steuerung
+            keys.left = false;
+            keys.right = false;
             
-            if (Math.abs(angleDiff) > 0.01) { // Sehr kleine Toleranz
-                if (angleDiff > 0) {
-                    ship.angle += Math.min(maxRotation, angleDiff);
-                } else {
-                    ship.angle -= Math.min(maxRotation, -angleDiff);
-                }
+            const tolerance = 0.1; // ~6 Grad Toleranz
+            if (angleDiff > tolerance) {
+                keys.right = true;
+            } else if (angleDiff < -tolerance) {
+                keys.left = true;
             }
             
             keys.up = true;
         } else {
             keys.up = false;
+            keys.left = false;
+            keys.right = false;
         }
     } else if (isMobile && !touchState.active) {
         keys.up = false;
+        keys.left = false;
+        keys.right = false;
     }
 }
 
