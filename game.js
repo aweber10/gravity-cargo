@@ -176,7 +176,8 @@ const ship = {
     vy: 0,
     angle: 0,
     size: 20,
-    thrusting: false
+    thrusting: false,
+    settling: false // true wenn das Schiff sich gerade aufrichtet
 };
 
 const keys = {
@@ -210,6 +211,7 @@ function initLevel() {
     ship.vx = 0;
     ship.vy = 0;
     ship.angle = 0;
+    ship.settling = false;
     
     game.lastLandedPlatform = currentLevel.startPlatform;
 }
@@ -457,6 +459,11 @@ function updateParticles(dt) {
 }
 
 function updateShipRotation(dt) {
+    // Wenn das Schiff sich aufrichtet, keine manuelle Steuerung
+    if (ship.settling) {
+        return;
+    }
+    
     if (keys.left) {
         ship.angle -= PHYSICS.rotationSpeed * dt;
     }
@@ -467,6 +474,12 @@ function updateShipRotation(dt) {
 
 function updateShipThrust(dt) {
     ship.thrusting = false;
+    
+    // Kein Schub während settling
+    if (ship.settling) {
+        return;
+    }
+    
     if (keys.up && game.fuel > 0) {
         ship.thrusting = true;
         playSound('thrust');
@@ -488,6 +501,32 @@ function applyPhysics(dt) {
     ship.vy *= PHYSICS.friction;
 }
 
+function updateShipSettling(dt) {
+    if (!ship.settling) {
+        return;
+    }
+    
+    // Normalisiere den Winkel auf -PI bis PI
+    let normalizedAngle = ship.angle % (Math.PI * 2);
+    if (normalizedAngle > Math.PI) {
+        normalizedAngle -= Math.PI * 2;
+    } else if (normalizedAngle < -Math.PI) {
+        normalizedAngle += Math.PI * 2;
+    }
+    
+    // Prüfe ob wir schon fast aufrecht sind
+    if (Math.abs(normalizedAngle) < PHYSICS.settlingMinAngle) {
+        ship.angle = 0;
+        ship.settling = false;
+        return;
+    }
+    
+    // Drehe sanft in Richtung 0
+    // Die Rotation ist schneller, je weiter das Schiff geneigt ist (physikalisch realistisch)
+    const rotationSpeed = normalizedAngle * PHYSICS.settlingRotationDamping;
+    ship.angle -= rotationSpeed;
+}
+
 function updateShipPosition(dt) {
     ship.x += ship.vx;
     ship.y += ship.vy;
@@ -499,6 +538,7 @@ function update(dt) {
     if (game.state === 'paused') return;
     if (game.state !== 'playing') return;
     
+    updateShipSettling(dt);
     updateShipRotation(dt);
     updateShipThrust(dt);
     applyPhysics(dt);
@@ -559,6 +599,17 @@ function land(platform) {
     ship.y = platform.position[1] - ship.size;
     game.lastLandedPlatform = platform.id;
     playSound('land');
+    
+    // Aktiviere Settling wenn das Schiff nicht perfekt aufrecht ist
+    const normalizedAngle = ((ship.angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+    let angleFromVertical = normalizedAngle;
+    if (angleFromVertical > Math.PI) {
+        angleFromVertical = Math.PI * 2 - angleFromVertical;
+    }
+    
+    if (angleFromVertical > PHYSICS.settlingMinAngle) {
+        ship.settling = true;
+    }
     
     if (game.currentCargo === null && platform.startingCargo !== null) {
         game.currentCargo = platform.startingCargo;
@@ -633,6 +684,7 @@ function respawn() {
     ship.vx = 0;
     ship.vy = 0;
     ship.angle = 0;
+    ship.settling = false;
     game.fuel = game.maxFuel;
     game.currentCargo = null;
 }
