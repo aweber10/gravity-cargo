@@ -1,7 +1,7 @@
 // Imports
-import { PHYSICS } from './config.js?v=3';
-import { levelTemplates, calculateMaxScore } from './levels.js?v=3';
-import { playSound } from './audio.js?v=3';
+import { PHYSICS } from './config.js?v=4';
+import { levelTemplates, calculateMaxScore } from './levels.js?v=4';
+import { playSound } from './audio.js?v=4';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -565,9 +565,11 @@ function updateTouchControls() {
         
         // Deadzone um das Schiff - nur bei ausreichender Entfernung reagieren
         if (distance > 30) {
-            // Berechne Zielwinkel - WICHTIG: atan2(dy, dx) für korrekten Winkel!
-            // Das Schiff zeigt bei angle=0 nach oben, daher - Math.PI/2
-            const targetAngle = Math.atan2(dy, dx) - Math.PI / 2;
+            // Berechne Zielwinkel
+            // atan2 gibt Winkel von X-Achse (rechts)
+            // Wir müssen zu Y-Achse (oben) konvertieren
+            // Bei angle=0 zeigt Schiff nach oben (negative Y-Richtung)
+            const targetAngle = Math.atan2(dx, dy);
             
             // Normalisiere beide Winkel auf -PI bis PI
             let currentAngle = ship.angle % (Math.PI * 2);
@@ -583,7 +585,7 @@ function updateTouchControls() {
             if (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
             else if (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
             
-            // Drehe sanft in die richtige Richtung (wie mit Pfeiltasten)
+            // Drehe sanft in die richtige Richtung
             const rotationSpeed = PHYSICS.rotationSpeed * 0.016; // ~60fps
             if (Math.abs(angleDiff) > 0.05) { // Kleine Toleranz
                 if (angleDiff > 0) {
