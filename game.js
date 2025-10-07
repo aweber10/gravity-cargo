@@ -1,7 +1,7 @@
 // Imports
-import { PHYSICS } from './config.js?v=6';
-import { levelTemplates, calculateMaxScore } from './levels.js?v=6';
-import { playSound } from './audio.js?v=6';
+import { PHYSICS } from './config.js?v=7';
+import { levelTemplates, calculateMaxScore } from './levels.js?v=7';
+import { playSound } from './audio.js?v=7';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -579,6 +579,14 @@ function updateTouchControls(dt) {
             if (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
             else if (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
             
+            // DEBUG
+            console.log('Touch:', touchState.x.toFixed(0), touchState.y.toFixed(0), 
+                        'Ship:', ship.x.toFixed(0), ship.y.toFixed(0),
+                        'dx:', dx.toFixed(1), 'dy:', dy.toFixed(1),
+                        'Target:', (targetAngle * 180 / Math.PI).toFixed(1) + '°',
+                        'Current:', (currentAngle * 180 / Math.PI).toFixed(1) + '°',
+                        'Diff:', (angleDiff * 180 / Math.PI).toFixed(1) + '°');
+            
             // Setze keys basierend auf der Differenz - genau wie Tastatur-Steuerung
             keys.left = false;
             keys.right = false;
@@ -586,8 +594,12 @@ function updateTouchControls(dt) {
             const tolerance = 0.1; // ~6 Grad Toleranz
             if (angleDiff > tolerance) {
                 keys.right = true;
+                console.log('→ RIGHT');
             } else if (angleDiff < -tolerance) {
                 keys.left = true;
+                console.log('← LEFT');
+            } else {
+                console.log('✓ ON TARGET');
             }
             
             keys.up = true;
