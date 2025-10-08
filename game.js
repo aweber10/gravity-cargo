@@ -556,8 +556,8 @@ function updateTouchControls(dt) {
         
         // Deadzone um das Schiff - nur bei ausreichender Entfernung reagieren
         if (distance > 30) {
-            // Berechne Zielwinkel
-            const targetAngle = Math.atan2(dx, dy);
+            // Berechne Zielwinkel - invertiere dy für korrekte Richtung im Canvas-Koordinatensystem
+            const targetAngle = Math.atan2(dx, -dy);
             
             // Normalisiere aktuellen Winkel auf -PI bis PI
             let currentAngle = ship.angle % (Math.PI * 2);
