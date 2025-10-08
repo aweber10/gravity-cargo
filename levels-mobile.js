@@ -81,32 +81,32 @@ export const levelTemplates = [
 
     // Level 4: "The Chimney"
     {
-        levelNumber: 4,
-        name: "The Chimney",
-        fuel: 120,
-        gravity: 0.05,
-        scrollDirection: null,
-        walls: [
-            { points: [[0, 0], [375, 0], [375, 20], [0, 20]], filled: true },
-            { points: [[0, 0], [20, 0], [20, 667], [0, 667]], filled: true },
-            { points: [[355, 0], [375, 0], [375, 667], [355, 667]], filled: true },
-            { points: [[0, 647], [375, 647], [375, 667], [0, 667]], filled: true },
-            // Kaminstruktur mit 100px breiten Durchgängen
-            { points: [[115, 150], [135, 150], [135, 520], [115, 520]], filled: true },
-            { points: [[240, 150], [260, 150], [260, 520], [240, 520]], filled: true },
-            // Horizontale Versperrungen
-            { points: [[135, 400], [240, 400], [240, 420], [135, 420]], filled: true },
-            { points: [[115, 270], [240, 270], [240, 290], [115, 290]], filled: true }
-        ],
-        platforms: [
-            { id: "ALPHA", position: [50, 590], width: 90, startingCargo: null },
-            { id: "BETA", position: [150, 480], width: 80, startingCargo: "DELTA" },
-            { id: "GAMMA", position: [30, 340], width: 75, startingCargo: "EPSILON" },
-            { id: "DELTA", position: [150, 210], width: 80, startingCargo: "ALPHA" },
-            { id: "EPSILON", position: [270, 110], width: 80, startingCargo: null }
-        ],
-        startPlatform: "ALPHA"
-    },
+    levelNumber: 4,
+    name: "The Chimney",
+    fuel: 120,
+    gravity: 0.05,
+    scrollDirection: null,
+    walls: [
+        { points: [[0, 0], [375, 0], [375, 20], [0, 20]], filled: true },
+        { points: [[0, 0], [20, 0], [20, 667], [0, 667]], filled: true },
+        { points: [[355, 0], [375, 0], [375, 667], [355, 667]], filled: true },
+        { points: [[0, 647], [375, 647], [375, 667], [0, 667]], filled: true },
+        // Kaminstruktur mit 105px breiten Durchgängen
+        { points: [[120, 150], [140, 150], [140, 520], [120, 520]], filled: true },
+        { points: [[245, 150], [265, 150], [265, 520], [245, 520]], filled: true },
+        // Horizontale Versperrungen
+        { points: [[140, 400], [245, 400], [245, 420], [140, 420]], filled: true },
+        { points: [[120, 270], [245, 270], [245, 290], [120, 290]], filled: true }
+    ],
+    platforms: [
+        { id: "ALPHA", position: [30, 590], width: 80, startingCargo: null }, // ✓ Korrigiert!
+        { id: "BETA", position: [155, 480], width: 80, startingCargo: "DELTA" },
+        { id: "GAMMA", position: [30, 340], width: 80, startingCargo: "EPSILON" },
+        { id: "DELTA", position: [155, 210], width: 80, startingCargo: "ALPHA" },
+        { id: "EPSILON", position: [275, 110], width: 80, startingCargo: null }
+    ],
+    startPlatform: "ALPHA"
+},
 
     // Level 5: "Stairway"
     {
