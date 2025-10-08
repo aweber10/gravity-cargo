@@ -1,14 +1,21 @@
 // Imports
 import { PHYSICS } from './config.js?v=8';
-import { levelTemplates, calculateMaxScore } from './levels.js?v=8';
+import { levelTemplates as desktopLevels, calculateMaxScore } from './levels.js?v=8';
+import { levelTemplates as mobileLevels } from './levels-mobile.js?v=8';
 import { playSound } from './audio.js?v=8';
+
+// Device detection for level selection
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+               ('ontouchstart' in window) ||
+               (navigator.maxTouchPoints > 0);
+
+// Select appropriate level templates based on device
+const levelTemplates = isMobile ? mobileLevels : desktopLevels;
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
-                 ('ontouchstart' in window) ||
-                 (navigator.maxTouchPoints > 0);
+// isMobile is defined below after importing mobile levels
 
 // Touch State für neue Ein-Finger-Steuerung
 const touchState = {
