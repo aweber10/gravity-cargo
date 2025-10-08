@@ -321,7 +321,14 @@ document.addEventListener('keyup', (e) => {
 });
 
 
-// Mobile pause button is handled by the canvas click handler
+// Mobile pause button event listener
+const pauseButton = document.getElementById('mobile-pause');
+pauseButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (game.state === 'playing' || game.state === 'paused') {
+        togglePause();
+    }
+});
 
 // Neue Touch Event Handler
 function handleTouchStart(e) {
