@@ -1,7 +1,7 @@
 // Imports
-import { PHYSICS } from './config.js?v=7';
-import { levelTemplates, calculateMaxScore } from './levels.js?v=7';
-import { playSound } from './audio.js?v=7';
+import { PHYSICS } from './config.js?v=8';
+import { levelTemplates, calculateMaxScore } from './levels.js?v=8';
+import { playSound } from './audio.js?v=8';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
