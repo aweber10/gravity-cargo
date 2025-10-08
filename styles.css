@@ -121,6 +121,21 @@ body {
     cursor: pointer;
 }
 
+#mobile-thrust {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    width: 100px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid #fff;
+    color: #fff;
+    font-size: 16px;
+    pointer-events: auto;
+    cursor: pointer;
+    display: none;
+}
+
 @media (max-width: 768px) {
     #mobile-pause {
         display: block !important;
