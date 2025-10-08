@@ -119,6 +119,7 @@ body {
     font-weight: bold;
     pointer-events: auto;
     cursor: pointer;
+    z-index: 100;
 }
 
 #mobile-thrust {

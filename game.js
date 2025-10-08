@@ -812,21 +812,23 @@ function renderPauseScreen() {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
+    // Title
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 64px "Courier New"';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('PAUSED', canvas.width / 2, canvas.height / 4);
+    ctx.fillText('PAUSED', canvas.width / 2, canvas.height * 0.2);
     
-    const startY = canvas.height / 2;
-    const spacing = 70;
+    // Menu options
+    const startY = canvas.height * 0.45;
+    const spacing = Math.min(70, canvas.height * 0.15);
+    const buttonWidth = Math.min(280, canvas.width * 0.7);
+    const buttonHeight = 50;
     
     pauseMenu.options.forEach((option, index) => {
         const y = startY + index * spacing;
         
         const isSelected = index === pauseMenu.selectedOption;
-        const buttonWidth = 280;
-        const buttonHeight = 50;
         const buttonX = canvas.width / 2 - buttonWidth / 2;
         const buttonY = y - buttonHeight / 2;
         
@@ -848,10 +850,11 @@ function renderPauseScreen() {
         option.bounds = { x: buttonX, y: buttonY, width: buttonWidth, height: buttonHeight };
     });
     
+    // Instructions
     ctx.font = '16px "Courier New"';
     ctx.fillStyle = '#888';
     ctx.textAlign = 'center';
-    ctx.fillText('ESC/P zum Fortsetzen', canvas.width / 2, canvas.height - 40);
+    ctx.fillText('ESC/P zum Fortsetzen', canvas.width / 2, canvas.height - 30);
 }
 
 function renderGameWonBackground() {
@@ -948,25 +951,28 @@ function renderMenu() {
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
+    // Title
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 64px "Courier New"';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('GRAVITY CARGO', canvas.width / 2, canvas.height / 3);
+    ctx.fillText('GRAVITY CARGO', canvas.width / 2, canvas.height * 0.25);
     
+    // Subtitle
     ctx.font = '20px "Courier New"';
     ctx.fillStyle = '#0ff';
-    ctx.fillText('A Retro Physics Puzzler', canvas.width / 2, canvas.height / 3 + 60);
+    ctx.fillText('A Retro Physics Puzzler', canvas.width / 2, canvas.height * 0.25 + 40);
     
-    const startY = canvas.height / 2 + 20;
-    const spacing = 70;
+    // Menu options
+    const startY = canvas.height * 0.5;
+    const spacing = Math.min(70, canvas.height * 0.15); // Scale spacing with screen height
+    const buttonWidth = Math.min(300, canvas.width * 0.8);
+    const buttonHeight = 50;
     
     menu.options.forEach((option, index) => {
         const y = startY + index * spacing;
         
         const isSelected = index === menu.selectedOption;
-        const buttonWidth = 300;
-        const buttonHeight = 50;
         const buttonX = canvas.width / 2 - buttonWidth / 2;
         const buttonY = y - buttonHeight / 2;
         
@@ -988,11 +994,12 @@ function renderMenu() {
         option.bounds = { x: buttonX, y: buttonY, width: buttonWidth, height: buttonHeight };
     });
     
+    // Footer
     ctx.font = '12px "Courier New"';
     ctx.fillStyle = '#666';
     ctx.textAlign = 'center';
-    ctx.fillText('Idee: Andreas Weber | Spec: Claude Sonnet 4.5 | Code: Claude Code', 
-                 canvas.width / 2, canvas.height - 30);
+    ctx.fillText('Idee: Andreas Weber | Spec: Claude Sonnet 4.5 | Code: Claude Code',
+                 canvas.width / 2, canvas.height - 20);
 }
 
 function render() {
@@ -1013,9 +1020,9 @@ function render() {
         ctx.fillStyle = '#fff';
         ctx.font = '48px "Courier New"';
         ctx.textAlign = 'center';
-        ctx.fillText('LEVEL COMPLETE!', canvas.width / 2, canvas.height / 2);
+        ctx.fillText('LEVEL COMPLETE!', canvas.width / 2, canvas.height * 0.45);
         ctx.font = '24px "Courier New"';
-        ctx.fillText(`SCORE: ${game.score}`, canvas.width / 2, canvas.height / 2 + 50);
+        ctx.fillText(`SCORE: ${game.score}`, canvas.width / 2, canvas.height * 0.45 + 40);
         return;
     }
     
@@ -1023,13 +1030,13 @@ function render() {
         ctx.fillStyle = '#fff';
         ctx.font = '48px "Courier New"';
         ctx.textAlign = 'center';
-        ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2);
+        ctx.fillText('GAME OVER', canvas.width / 2, canvas.height * 0.4);
         ctx.font = '24px "Courier New"';
-        ctx.fillText(`LEVEL: ${game.level}`, canvas.width / 2, canvas.height / 2 + 50);
-        ctx.fillText(`SCORE: ${game.score}`, canvas.width / 2, canvas.height / 2 + 85);
+        ctx.fillText(`LEVEL: ${game.level}`, canvas.width / 2, canvas.height * 0.4 + 35);
+        ctx.fillText(`SCORE: ${game.score}`, canvas.width / 2, canvas.height * 0.4 + 70);
         ctx.font = '20px "Courier New"';
         ctx.fillStyle = '#0ff';
-        ctx.fillText('ENTER für Hauptmenü', canvas.width / 2, canvas.height / 2 + 140);
+        ctx.fillText('ENTER für Hauptmenü', canvas.width / 2, canvas.height * 0.4 + 120);
         return;
     }
     
