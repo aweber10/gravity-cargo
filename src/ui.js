@@ -263,6 +263,7 @@ export function setupTouchControls() {
 
 // Handle menu touch events
 function handleMenuTouch(e) {
+    const canvas = document.getElementById('gameCanvas');
     const touch = e.touches[0];
     const rect = canvas.getBoundingClientRect();
     const touchX = touch.clientX - rect.left;
@@ -277,6 +278,7 @@ function handleMenuTouch(e) {
 
 // Handle pause menu touch events
 function handlePauseMenuTouch(e) {
+    const canvas = document.getElementById('gameCanvas');
     const touch = e.touches[0];
     const rect = canvas.getBoundingClientRect();
     const touchX = touch.clientX - rect.left;
