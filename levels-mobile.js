@@ -91,14 +91,12 @@ export const levelTemplates = [
             { points: [[0, 0], [20, 0], [20, 667], [0, 667]], filled: true },
             { points: [[355, 0], [375, 0], [375, 667], [355, 667]], filled: true },
             { points: [[0, 647], [375, 647], [375, 667], [0, 667]], filled: true },
-            // Kaminstruktur - KORRIGIERT
-            // Linke Wand: Nur vom oberen Querbalken (y=290) bis unten (y=520)
-            // So ist links von BETA offen
-            { points: [[120, 290], [140, 290], [140, 520], [120, 520]], filled: true },
-            // Rechte Wand: Nur von oben (y=150) bis zum oberen Querbalken (y=270)
-            // So ist rechts von DELTA offen
-            { points: [[245, 150], [265, 150], [265, 270], [245, 270]], filled: true },
-            // Horizontale Querbalken (bleiben komplett unverändert)
+            // Kaminstruktur - ENDGÜLTIG KORRIGIERT
+            // Linke Wand: von oben (y=150) bis zum unteren Querbalken (y=400)
+            { points: [[120, 150], [140, 150], [140, 400], [120, 400]], filled: true },
+            // Rechte Wand: vom oberen Querbalken (y=290) bis unten (y=520)
+            { points: [[245, 290], [265, 290], [265, 520], [245, 520]], filled: true },
+            // Horizontale Querbalken (unverändert)
             { points: [[140, 400], [245, 400], [245, 420], [140, 420]], filled: true },
             { points: [[120, 270], [245, 270], [245, 290], [120, 290]], filled: true }
         ],
