@@ -3,8 +3,8 @@
 
 import { gameState } from './game-state.js';
 import { isMobile } from './ui.js';
-import { PHYSICS } from '../config.js?v=11';
-import { playSound } from '../audio.js?v=11';
+import { PHYSICS } from './config.js?v=12';
+import { playSound } from './audio.js?v=12';
 
 // Ship state
 const ship = {

@@ -8,7 +8,7 @@ import { checkCollisions } from './collision.js';
 import { initCanvas, render } from './renderer.js';
 import { updateUI, setupKeyboardControls, setupTouchControls, setupClickControls, initMenu } from './ui.js';
 import { initGame } from './game-flow.js';
-import { PHYSICS } from '../config.js?v=11';
+import { PHYSICS } from './config.js?v=12';
 
 // Game loop variables
 let lastTime = 0;

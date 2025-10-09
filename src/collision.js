@@ -4,8 +4,8 @@
 import { gameState } from './game-state.js';
 import { getShip, setShipPosition, setShipVelocity, setShipAngle, setShipSettling } from './ship-physics.js';
 import { getCurrentLevel, getWalls, getPlatforms, initLevel } from './level-manager.js';
-import { playSound } from '../audio.js?v=11';
-import { PHYSICS } from '../config.js?v=11';
+import { playSound } from './audio.js?v=11';
+import { PHYSICS } from './config.js?v=11';
 
 // Create explosion effect
 export function createExplosion(x, y) {

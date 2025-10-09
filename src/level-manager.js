@@ -2,10 +2,10 @@
 // Manages level loading, initialization, and progression
 
 import { gameState } from './game-state.js';
-import { PHYSICS } from '../config.js?v=11';
-import { levelTemplates as desktopLevels, calculateMaxScore } from '../levels.js?v=11';
-import { levelTemplates as mobileLevels } from '../levels-mobile.js?v=11';
-import { playSound } from '../audio.js?v=11';
+import { PHYSICS } from './config.js?v=12';
+import { levelTemplates as desktopLevels, calculateMaxScore } from './levels.js?v=12';
+import { levelTemplates as mobileLevels } from './levels-mobile.js?v=12';
+import { playSound } from './audio.js?v=12';
 
 // Device detection for level selection
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
