@@ -2,9 +2,8 @@
 // Handles user interface components, menu systems, and event handling
 
 import { gameState } from './game-state.js';
-import { getShip } from './ship-physics.js';
-import { setKeyState, setTouchState } from './ship-physics.js';
-import { togglePause, handleMenuSelection } from './game-flow.js';
+import { getShip, setKeyState, setTouchState, getTouchState } from './ship-physics.js';
+import { togglePause, handleMenuSelection, handlePauseMenuSelection } from './game-flow.js';
 
 // Device detection
 export const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
@@ -87,6 +86,14 @@ export function initMenu() {
     // Set selected option to first enabled entry
     menu.selectedOption = menu.options.findIndex(o => o.enabled);
     if (menu.selectedOption === -1) menu.selectedOption = 0;
+    
+    // Show pause button on mobile devices
+    if (isMobile) {
+        const pauseButton = document.getElementById('mobile-pause');
+        if (pauseButton) {
+            pauseButton.style.display = 'block';
+        }
+    }
     
     gameState.state = 'menu';
 }

@@ -2,6 +2,7 @@
 // Handles ship movement, physics, and input processing
 
 import { gameState } from './game-state.js';
+import { isMobile } from './ui.js';
 import { PHYSICS } from '../config.js?v=11';
 import { playSound } from '../audio.js?v=11';
 
@@ -164,7 +165,7 @@ export function updateShipPosition(dt) {
 }
 
 export function updateTouchControls(dt) {
-    if (touchState.active && !ship.settling) {
+    if (touchState.active && isMobile && !ship.settling) {
         const dx = touchState.x - ship.x;
         const dy = touchState.y - ship.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -205,7 +206,8 @@ export function updateTouchControls(dt) {
             keys.left = false;
             keys.right = false;
         }
-    } else {
+    } else if (isMobile && !touchState.active) {
+        // Only reset keys if mobile and not touching
         keys.up = false;
         keys.left = false;
         keys.right = false;

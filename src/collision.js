@@ -2,8 +2,8 @@
 // Handles collision detection and response
 
 import { gameState } from './game-state.js';
-import { getShip } from './ship-physics.js';
-import { getCurrentLevel, getWalls, getPlatforms } from './level-manager.js';
+import { getShip, setShipPosition, setShipVelocity, setShipAngle, setShipSettling } from './ship-physics.js';
+import { getCurrentLevel, getWalls, getPlatforms, initLevel } from './level-manager.js';
 import { playSound } from '../audio.js?v=11';
 import { PHYSICS } from '../config.js?v=11';
 
@@ -137,13 +137,14 @@ export function respawn() {
     const platform = getPlatforms().find(p => p.id === gameState.lastLandedPlatform);
     if (!platform) return;
     
-    const ship = getShip();
-    ship.x = platform.position[0] + platform.width / 2;
-    ship.y = platform.position[1] - ship.size;
-    ship.vx = 0;
-    ship.vy = 0;
-    ship.angle = 0;
-    ship.settling = false;
+    setShipPosition(
+        platform.position[0] + platform.width / 2,
+        platform.position[1] - getShip().size
+    );
+    setShipVelocity(0, 0);
+    setShipAngle(0);
+    setShipSettling(false);
+    
     gameState.fuel = gameState.maxFuel;
     gameState.currentCargo = null;
 }
@@ -176,7 +177,14 @@ function levelComplete() {
     
     setTimeout(() => {
         if (gameState.level <= 10) {
-            // Level initialization will be handled by the main game loop
+            // Initialize new level and set ship position
+            const startPos = initLevel();
+            const ship = getShip();
+            setShipPosition(startPos.x, startPos.y);
+            setShipVelocity(0, 0);
+            setShipAngle(startPos.angle);
+            setShipSettling(false);
+            
             gameState.state = 'playing';
         } else {
             gameState.state = 'gamewon';

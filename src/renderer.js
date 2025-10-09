@@ -2,9 +2,9 @@
 // Handles all rendering operations for the game
 
 import { gameState } from './game-state.js';
-import { getShip } from './ship-physics.js';
-import { getCurrentLevel, getWalls, getPlatforms } from './level-manager.js';
-import { isMobile } from './ui.js';
+import { getShip, getTouchState } from './ship-physics.js';
+import { getCurrentLevel, getWalls, getPlatforms, getMaxScore } from './level-manager.js';
+import { isMobile, menu, pauseMenu } from './ui.js';
 
 // Canvas setup
 const canvas = document.getElementById('gameCanvas');
@@ -183,6 +183,44 @@ function renderMenu() {
     ctx.font = '20px "Courier New"';
     ctx.fillStyle = '#0ff';
     ctx.fillText('A Retro Physics Puzzler', canvas.width / 2, canvas.height * 0.25 + 40);
+    
+    // Menu options
+    const startY = canvas.height * 0.5;
+    const spacing = Math.min(70, canvas.height * 0.15); // Scale spacing with screen height
+    const buttonWidth = Math.min(300, canvas.width * 0.8);
+    const buttonHeight = 50;
+    
+    menu.options.forEach((option, index) => {
+        const y = startY + index * spacing;
+        
+        const isSelected = index === menu.selectedOption;
+        const buttonX = canvas.width / 2 - buttonWidth / 2;
+        const buttonY = y - buttonHeight / 2;
+        
+        if (isSelected && option.enabled) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
+        }
+        
+        ctx.strokeStyle = option.enabled ? '#fff' : '#444';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(buttonX, buttonY, buttonWidth, buttonHeight);
+        
+        ctx.font = '24px "Courier New"';
+        ctx.fillStyle = option.enabled ? '#fff' : '#444';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(option.label, canvas.width / 2, y);
+        
+        option.bounds = { x: buttonX, y: buttonY, width: buttonWidth, height: buttonHeight };
+    });
+    
+    // Footer
+    ctx.font = '12px "Courier New"';
+    ctx.fillStyle = '#666';
+    ctx.textAlign = 'center';
+    ctx.fillText('Idee: Andreas Weber | Spec: Claude Sonnet 4.5 | Code: Claude Code',
+                 canvas.width / 2, canvas.height - 20);
 }
 
 // Render pause screen
@@ -196,6 +234,43 @@ function renderPauseScreen() {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('PAUSED', canvas.width / 2, canvas.height * 0.2);
+    
+    // Menu options
+    const startY = canvas.height * 0.45;
+    const spacing = Math.min(70, canvas.height * 0.15);
+    const buttonWidth = Math.min(280, canvas.width * 0.7);
+    const buttonHeight = 50;
+    
+    pauseMenu.options.forEach((option, index) => {
+        const y = startY + index * spacing;
+        
+        const isSelected = index === pauseMenu.selectedOption;
+        const buttonX = canvas.width / 2 - buttonWidth / 2;
+        const buttonY = y - buttonHeight / 2;
+        
+        if (isSelected) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
+        }
+        
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(buttonX, buttonY, buttonWidth, buttonHeight);
+        
+        ctx.font = '22px "Courier New"';
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(option.label, canvas.width / 2, y);
+        
+        option.bounds = { x: buttonX, y: buttonY, width: buttonWidth, height: buttonHeight };
+    });
+    
+    // Instructions
+    ctx.font = '16px "Courier New"';
+    ctx.fillStyle = '#888';
+    ctx.textAlign = 'center';
+    ctx.fillText('ESC/P zum Fortsetzen', canvas.width / 2, canvas.height - 30);
 }
 
 // Render level complete screen
@@ -240,7 +315,7 @@ function renderGameWon() {
     ctx.fillText('ALLE LEVEL ABGESCHLOSSEN', canvas.width / 2, canvas.height / 5 + 70);
     
     // Score
-    const maxScore = 10; // This should come from level-manager.js
+    const maxScore = getMaxScore();
     const percentage = Math.round((gameState.score / maxScore) * 100);
     const scoreY = canvas.height / 2 - 40;
     

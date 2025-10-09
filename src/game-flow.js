@@ -2,8 +2,10 @@
 // Handles game state transitions, menu systems, and high-level game flow
 
 import { gameState } from './game-state.js';
-import { initMenu as uiInitMenu } from './ui.js';
+import { menu, pauseMenu, initMenu as uiInitMenu, setupKeyboardControls, setupTouchControls, setupClickControls } from './ui.js';
 import { initCanvas } from './renderer.js';
+import { initLevel } from './level-manager.js';
+import { setShipPosition, setShipVelocity, setShipAngle, setShipSettling } from './ship-physics.js';
 
 // Toggle pause state
 export function togglePause() {
@@ -38,7 +40,14 @@ export function restartLevel() {
     gameState.lives = 3;
     gameState.currentCargo = null;
     gameState.deliveredCargo = 0;
-    // Level initialization will be handled by the main game loop
+    
+    // Re-initialize level and set ship position
+    const startPos = initLevel();
+    setShipPosition(startPos.x, startPos.y);
+    setShipVelocity(0, 0);
+    setShipAngle(startPos.angle);
+    setShipSettling(false);
+    
     gameState.state = 'playing';
 }
 
@@ -68,7 +77,14 @@ export function startNewGame() {
     } catch (e) {
         console.error('Clear save failed:', e);
     }
-    // Level initialization will be handled by the main game loop
+    
+    // Initialize level and set ship position
+    const startPos = initLevel();
+    setShipPosition(startPos.x, startPos.y);
+    setShipVelocity(0, 0);
+    setShipAngle(startPos.angle);
+    setShipSettling(false);
+    
     gameState.state = 'playing';
 }
 
@@ -80,7 +96,14 @@ export function continueGame() {
         if (saveData) {
             gameState.level = saveData.level;
             gameState.score = saveData.score;
-            // Level initialization will be handled by the main game loop
+            
+            // Initialize level and set ship position
+            const startPos = initLevel();
+            setShipPosition(startPos.x, startPos.y);
+            setShipVelocity(0, 0);
+            setShipAngle(startPos.angle);
+            setShipSettling(false);
+            
             gameState.state = 'playing';
         }
     } catch (e) {
@@ -113,10 +136,7 @@ export function initGame() {
     uiInitMenu();
     
     // Setup event listeners
-    setupEventListeners();
-}
-
-// Setup event listeners
-function setupEventListeners() {
-    // This will be handled by ui.js
+    setupKeyboardControls();
+    setupTouchControls();
+    setupClickControls();
 }

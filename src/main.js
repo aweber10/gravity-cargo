@@ -8,6 +8,7 @@ import { checkCollisions } from './collision.js';
 import { initCanvas, render } from './renderer.js';
 import { updateUI, setupKeyboardControls, setupTouchControls, setupClickControls, initMenu } from './ui.js';
 import { initGame } from './game-flow.js';
+import { PHYSICS } from '../config.js?v=11';
 
 // Game loop variables
 let lastTime = 0;
@@ -32,7 +33,7 @@ function update(dt) {
     updateShipSettling(dt);
     updateShipRotation(dt);
     updateShipThrust(dt);
-    applyPhysics(dt, gameState.gravity);
+    applyPhysics(dt, PHYSICS.gravity);
     updateShipPosition(dt);
     checkCollisions();
     updateUI();
