@@ -23,23 +23,17 @@ export const levelTemplates = [
     },
     {
         levelNumber: 2,
-        name: "The U-Turn",
-        fuel: 140,
+        name: "Platform Hopper",
+        fuel: 150,
         gravity: 0.05,
         scrollDirection: null,
-        walls: [
-            { points: [[0, 0], [800, 0], [800, 20], [0, 20]], filled: true },
-            { points: [[0, 0], [20, 0], [20, 600], [0, 600]], filled: true },
-            { points: [[780, 0], [800, 0], [800, 600], [780, 600]], filled: true },
-            { points: [[0, 580], [800, 580], [800, 600], [0, 600]], filled: true },
-            { points: [[250, 100], [270, 100], [270, 500], [250, 500]], filled: true },
-            { points: [[530, 100], [550, 100], [550, 500], [530, 500]], filled: true }
-        ],
+        walls: [],
         platforms: [
-            { id: "ALPHA", position: [100, 500], width: 80, startingCargo: null },
-            { id: "BETA", position: [100, 80], width: 80, startingCargo: "GAMMA" },
-            { id: "GAMMA", position: [620, 80], width: 80, startingCargo: "ALPHA" },
-            { id: "DELTA", position: [620, 500], width: 80, startingCargo: null }
+            { id: "ALPHA", position: [350, 500], width: 100, startingCargo: null },
+            { id: "BETA", position: [150, 150], width: 80, startingCargo: "EPSILON" },
+            { id: "GAMMA", position: [600, 150], width: 80, startingCargo: "BETA" },
+            { id: "DELTA", position: [150, 450], width: 80, startingCargo: "GAMMA" },
+            { id: "EPSILON", position: [600, 450], width: 80, startingCargo: "DELTA" }
         ],
         startPlatform: "ALPHA"
     },
