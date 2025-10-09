@@ -1,8 +1,8 @@
 // Imports
-import { PHYSICS } from './config.js?v=10';
-import { levelTemplates as desktopLevels, calculateMaxScore } from './levels.js?v=10';
-import { levelTemplates as mobileLevels } from './levels-mobile.js?v=10';
-import { playSound } from './audio.js?v=10';
+import { PHYSICS } from './config.js?v=11';
+import { levelTemplates as desktopLevels, calculateMaxScore } from './levels.js?v=11';
+import { levelTemplates as mobileLevels } from './levels-mobile.js?v=11';
+import { playSound } from './audio.js?v=11';
 
 // Device detection for level selection
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
