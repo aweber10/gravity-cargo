@@ -953,7 +953,8 @@ function renderMenu() {
     
     // Title
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 64px "Courier New"';
+    const titleFontSize = isMobile ? 'bold 36px' : 'bold 64px';
+    ctx.font = `${titleFontSize} "Courier New"`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('GRAVITY CARGO', canvas.width / 2, canvas.height * 0.25);
@@ -1018,7 +1019,8 @@ function render() {
     
     if (game.state === 'levelcomplete') {
         ctx.fillStyle = '#fff';
-        ctx.font = '48px "Courier New"';
+        const completeFontSize = isMobile ? '32px' : '48px';
+        ctx.font = `${completeFontSize} "Courier New"`;
         ctx.textAlign = 'center';
         ctx.fillText('LEVEL COMPLETE!', canvas.width / 2, canvas.height * 0.45);
         ctx.font = '24px "Courier New"';
