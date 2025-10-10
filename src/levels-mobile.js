@@ -183,22 +183,21 @@ export const levelTemplates = [
             { points: [[0, 0], [20, 0], [20, 667], [0, 667]], filled: true },
             { points: [[355, 0], [375, 0], [375, 667], [355, 667]], filled: true },
             { points: [[0, 647], [375, 647], [375, 667], [0, 667]], filled: true },
-            // S-förmiger Pfad (100px Durchgänge)
-            { points: [[230, 550], [250, 550], [250, 630], [230, 630]], filled: true },
-            { points: [[20, 450], [200, 450], [200, 470], [20, 470]], filled: true },
-            { points: [[125, 350], [145, 350], [145, 450], [125, 450]], filled: true },
-            { points: [[175, 250], [355, 250], [355, 270], [175, 270]], filled: true },
-            { points: [[230, 150], [250, 150], [250, 250], [230, 250]], filled: true },
-            { points: [[20, 50], [200, 50], [200, 70], [20, 70]], filled: true }
+            // S-förmiger Pfad - vereinfacht
+            { points: [[230, 520], [250, 520], [250, 630], [230, 630]], filled: true },
+            { points: [[20, 420], [200, 420], [200, 440], [20, 440]], filled: true },
+            { points: [[125, 320], [145, 320], [145, 420], [125, 420]], filled: true },
+            { points: [[175, 210], [355, 210], [355, 230], [175, 230]], filled: true },
+            { points: [[230, 110], [250, 110], [250, 210], [230, 210]], filled: true }
         ],
         platforms: [
             { id: "ALPHA", position: [30, 600], width: 90, startingCargo: null },
-            { id: "BETA", position: [260, 590], width: 80, startingCargo: "EPSILON" },
-            { id: "GAMMA", position: [30, 390], width: 80, startingCargo: "ZETA" },
-            { id: "DELTA", position: [170, 300], width: 70, startingCargo: "THETA" },
-            { id: "EPSILON", position: [265, 190], width: 80, startingCargo: "ALPHA" },
-            { id: "ZETA", position: [210, 80], width: 70, startingCargo: null },
-            { id: "THETA", position: [50, 590], width: 70, startingCargo: null }
+            { id: "BETA", position: [260, 560], width: 80, startingCargo: "EPSILON" },
+            { id: "GAMMA", position: [30, 360], width: 80, startingCargo: "ZETA" },
+            { id: "DELTA", position: [30, 150], width: 70, startingCargo: "THETA" },
+            { id: "EPSILON", position: [265, 150], width: 80, startingCargo: "ALPHA" },
+            { id: "ZETA", position: [160, 80], width: 70, startingCargo: null },
+            { id: "THETA", position: [260, 370], width: 70, startingCargo: null }
         ],
         startPlatform: "ALPHA"
     },
