@@ -196,7 +196,7 @@ export const levelTemplates = [
             { id: "GAMMA", position: [30, 360], width: 80, startingCargo: "ZETA" },
             { id: "DELTA", position: [30, 150], width: 70, startingCargo: "THETA" },
             { id: "EPSILON", position: [265, 150], width: 80, startingCargo: "ALPHA" },
-            { id: "ZETA", position: [160, 80], width: 70, startingCargo: null },
+            { id: "ZETA", position: [150, 100], width: 70, startingCargo: null },
             { id: "THETA", position: [260, 370], width: 70, startingCargo: null }
         ],
         startPlatform: "ALPHA"
@@ -214,28 +214,26 @@ export const levelTemplates = [
             { points: [[0, 0], [20, 0], [20, 667], [0, 667]], filled: true },
             { points: [[355, 0], [375, 0], [375, 667], [355, 667]], filled: true },
             { points: [[0, 647], [375, 647], [375, 667], [0, 667]], filled: true },
-            // Linker Turm
-            { points: [[70, 100], [95, 100], [95, 550], [70, 550]], filled: true },
-            { points: [[45, 180], [70, 180], [70, 200], [45, 200]], filled: true },
-            { points: [[45, 300], [70, 300], [70, 320], [45, 320]], filled: true },
-            { points: [[45, 420], [70, 420], [70, 440], [45, 440]], filled: true },
-            // Rechter Turm
-            { points: [[280, 100], [305, 100], [305, 550], [280, 550]], filled: true },
-            { points: [[305, 180], [330, 180], [330, 200], [305, 200]], filled: true },
-            { points: [[305, 300], [330, 300], [330, 320], [305, 320]], filled: true },
-            { points: [[305, 420], [330, 420], [330, 440], [305, 440]], filled: true },
-            // Verbindungen (100px Durchgänge)
-            { points: [[95, 260], [280, 260], [280, 280], [95, 280]], filled: true },
-            { points: [[95, 380], [280, 380], [280, 400], [95, 400]], filled: true }
+            // Linker Turm - VERKÜRZT und mit mehr Öffnungen
+            { points: [[70, 120], [95, 120], [95, 350], [70, 350]], filled: true },
+            { points: [[70, 480], [95, 480], [95, 580], [70, 580]], filled: true },
+            // Kleine Vorsprünge links - ENTFERNT für mehr Platz bei BETA
+            // Rechter Turm - VERKÜRZT und mit mehr Öffnungen
+            { points: [[280, 120], [305, 120], [305, 350], [280, 350]], filled: true },
+            { points: [[280, 450], [305, 450], [305, 580], [280, 580]], filled: true },
+            // Kleine Vorsprünge rechts - REDUZIERT
+            { points: [[305, 500], [330, 500], [330, 520], [305, 520]], filled: true },
+            // Mittlere Verbindung - HÖHER verschoben für mehr Platz bei GAMMA
+            { points: [[95, 360], [280, 360], [280, 380], [95, 380]], filled: true }
         ],
         platforms: [
             { id: "ALPHA", position: [130, 600], width: 115, startingCargo: null },
-            { id: "BETA", position: [25, 470], width: 60, startingCargo: "ZETA" },
-            { id: "GAMMA", position: [110, 330], width: 70, startingCargo: "THETA" },
-            { id: "DELTA", position: [310, 330], width: 60, startingCargo: "EPSILON" },
-            { id: "EPSILON", position: [190, 220], width: 70, startingCargo: "ALPHA" },
-            { id: "ZETA", position: [110, 140], width: 70, startingCargo: null },
-            { id: "THETA", position: [25, 50], width: 80, startingCargo: null }
+            { id: "BETA", position: [25, 550], width: 70, startingCargo: "ZETA" },
+            { id: "GAMMA", position: [110, 420], width: 70, startingCargo: "THETA" },
+            { id: "DELTA", position: [285, 410], width: 65, startingCargo: "EPSILON" },
+            { id: "EPSILON", position: [155, 290], width: 70, startingCargo: "ALPHA" },
+            { id: "ZETA", position: [110, 180], width: 70, startingCargo: null },
+            { id: "THETA", position: [200, 80], width: 80, startingCargo: null }
         ],
         startPlatform: "ALPHA"
     },
@@ -252,30 +250,30 @@ export const levelTemplates = [
             { points: [[0, 0], [20, 0], [20, 667], [0, 667]], filled: true },
             { points: [[355, 0], [375, 0], [375, 667], [355, 667]], filled: true },
             { points: [[0, 647], [375, 647], [375, 667], [0, 667]], filled: true },
-            // Verschiedene Hindernisse übereinander
-            // Sektion 1: Vertikale Enge
+            // Verschiedene Hindernisse übereinander - VERBESSERT
+            // Sektion 1: Vertikale Enge (unten)
             { points: [[130, 540], [150, 540], [150, 620], [130, 620]], filled: true },
             { points: [[225, 540], [245, 540], [245, 620], [225, 620]], filled: true },
-            // Sektion 2: Horizontale Enge
-            { points: [[20, 440], [140, 440], [140, 460], [20, 460]], filled: true },
-            { points: [[235, 440], [355, 440], [355, 460], [235, 460]], filled: true },
-            // Sektion 3: Versetzter Korridor
-            { points: [[90, 320], [110, 320], [110, 420], [90, 420]], filled: true },
-            { points: [[265, 320], [285, 320], [285, 420], [265, 420]], filled: true },
-            // Sektion 4: Finale Passage
-            { points: [[150, 180], [170, 180], [170, 300], [150, 300]], filled: true },
-            { points: [[205, 180], [225, 180], [225, 300], [205, 300]], filled: true },
-            { points: [[100, 100], [275, 100], [275, 120], [100, 120]], filled: true }
+            // Sektion 2: Horizontale Enge - VERKÜRZT
+            { points: [[20, 440], [120, 440], [120, 460], [20, 460]], filled: true },
+            { points: [[255, 440], [355, 440], [355, 460], [255, 460]], filled: true },
+            // Sektion 3: Versetzter Korridor - BREITER
+            { points: [[80, 320], [100, 320], [100, 420], [80, 420]], filled: true },
+            { points: [[275, 320], [295, 320], [295, 420], [275, 420]], filled: true },
+            // Sektion 4: Finale Passage - BREITER
+            { points: [[140, 180], [160, 180], [160, 300], [140, 300]], filled: true },
+            { points: [[215, 180], [235, 180], [235, 300], [215, 300]], filled: true }
+            // Oberste horizontale Wand ENTFERNT für THETA
         ],
         platforms: [
             { id: "ALPHA", position: [40, 600], width: 80, startingCargo: null },
             { id: "BETA", position: [165, 580], width: 50, startingCargo: "THETA" },
             { id: "GAMMA", position: [260, 580], width: 70, startingCargo: "EPSILON" },
             { id: "DELTA", position: [160, 480], width: 60, startingCargo: "ZETA" },
-            { id: "EPSILON", position: [120, 360], width: 55, startingCargo: "ETA" },
-            { id: "ZETA", position: [295, 360], width: 55, startingCargo: "ALPHA" },
-            { id: "ETA", position: [175, 230], width: 55, startingCargo: null },
-            { id: "THETA", position: [120, 50], width: 90, startingCargo: null }
+            { id: "EPSILON", position: [110, 360], width: 65, startingCargo: "ETA" },
+            { id: "ZETA", position: [300, 360], width: 55, startingCargo: "ALPHA" },
+            { id: "ETA", position: [170, 230], width: 60, startingCargo: null },
+            { id: "THETA", position: [140, 80], width: 95, startingCargo: null }
         ],
         startPlatform: "ALPHA"
     },
@@ -292,36 +290,32 @@ export const levelTemplates = [
             { points: [[0, 0], [20, 0], [20, 667], [0, 667]], filled: true },
             { points: [[355, 0], [375, 0], [375, 667], [355, 667]], filled: true },
             { points: [[0, 647], [375, 647], [375, 667], [0, 667]], filled: true },
-            // Komplexes Labyrinth (95-100px Durchgänge)
-            // Obere Sektion
-            { points: [[100, 80], [120, 80], [120, 180], [100, 180]], filled: true },
-            { points: [[255, 80], [275, 80], [275, 180], [255, 180]], filled: true },
-            { points: [[120, 140], [255, 140], [255, 160], [120, 160]], filled: true },
-            // Mittlere Sektion
-            { points: [[60, 220], [80, 220], [80, 340], [60, 340]], filled: true },
-            { points: [[175, 240], [195, 240], [195, 360], [175, 360]], filled: true },
-            { points: [[295, 220], [315, 220], [315, 340], [295, 340]], filled: true },
-            { points: [[80, 280], [175, 280], [175, 300], [80, 300]], filled: true },
-            { points: [[195, 300], [295, 300], [295, 320], [195, 320]], filled: true },
-            // Untere Sektion
-            { points: [[130, 400], [150, 400], [150, 520], [130, 520]], filled: true },
-            { points: [[225, 400], [245, 400], [245, 520], [225, 520]], filled: true },
-            { points: [[80, 460], [130, 460], [130, 480], [80, 480]], filled: true },
-            { points: [[245, 460], [295, 460], [295, 480], [245, 480]], filled: true },
-            // Finale Barriere
-            { points: [[20, 560], [120, 560], [120, 580], [20, 580]], filled: true },
-            { points: [[255, 560], [355, 560], [355, 580], [255, 580]], filled: true }
+            // Komplexes Labyrinth - VEREINFACHT
+            // Obere Sektion - BREITER
+            { points: [[90, 80], [110, 80], [110, 200], [90, 200]], filled: true },
+            { points: [[265, 80], [285, 80], [285, 200], [265, 200]], filled: true },
+            // Horizontale Wand über GAMMA ENTFERNT für Freiraum
+            // Mittlere Sektion - BREITER, linke Wand VERKÜRZT für EPSILON
+            { points: [[50, 240], [70, 240], [70, 340], [50, 340]], filled: true },
+            { points: [[165, 260], [185, 260], [185, 380], [165, 380]], filled: true },
+            { points: [[305, 240], [325, 240], [325, 360], [305, 360]], filled: true },
+            { points: [[70, 300], [165, 300], [165, 320], [70, 320]], filled: true },
+            // Untere Sektion - BREITER
+            { points: [[120, 420], [140, 420], [140, 540], [120, 540]], filled: true },
+            { points: [[235, 420], [255, 420], [255, 540], [235, 540]], filled: true },
+            // Finale Barriere - VERKÜRZT
+            { points: [[20, 570], [100, 570], [100, 590], [20, 590]], filled: true },
+            { points: [[275, 570], [355, 570], [355, 590], [275, 590]], filled: true }
         ],
         platforms: [
-            { id: "ALPHA", position: [130, 610], width: 115, startingCargo: null },
-            { id: "BETA", position: [30, 130], width: 60, startingCargo: "ETA" },
-            { id: "GAMMA", position: [135, 100], width: 50, startingCargo: "THETA" },
-            { id: "DELTA", position: [290, 130], width: 60, startingCargo: "IOTA" },
-            { id: "EPSILON", position: [90, 360], width: 70, startingCargo: "ZETA" },
-            { id: "ZETA", position: [210, 360], width: 70, startingCargo: "ALPHA" },
-            { id: "ETA", position: [160, 490], width: 55, startingCargo: null },
-            { id: "THETA", position: [25, 520], width: 65, startingCargo: null },
-            { id: "IOTA", position: [270, 610], width: 70, startingCargo: null }
+            { id: "ALPHA", position: [130, 615], width: 115, startingCargo: null },
+            { id: "BETA", position: [25, 150], width: 70, startingCargo: "ETA" },
+            { id: "GAMMA", position: [135, 110], width: 65, startingCargo: "THETA" },
+            { id: "DELTA", position: [290, 150], width: 70, startingCargo: null },
+            { id: "EPSILON", position: [80, 390], width: 75, startingCargo: "ZETA" },
+            { id: "ZETA", position: [210, 390], width: 75, startingCargo: "ALPHA" },
+            { id: "ETA", position: [155, 470], width: 65, startingCargo: null },
+            { id: "THETA", position: [25, 530], width: 75, startingCargo: null }
         ],
         startPlatform: "ALPHA"
     }

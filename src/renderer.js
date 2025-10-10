@@ -303,63 +303,64 @@ function renderGameWon() {
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Title
+    // Title - MOBILE OPTIMIERT
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 56px "Courier New"';
+    ctx.font = 'bold 40px "Courier New"';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('GLÜCKWUNSCH!', canvas.width / 2, canvas.height / 5);
+    ctx.fillText('GLÜCKWUNSCH!', canvas.width / 2, canvas.height / 6);
     
-    ctx.font = '32px "Courier New"';
+    ctx.font = '18px "Courier New"';
     ctx.fillStyle = '#0ff';
-    ctx.fillText('ALLE LEVEL ABGESCHLOSSEN', canvas.width / 2, canvas.height / 5 + 70);
+    ctx.fillText('ALLE LEVEL', canvas.width / 2, canvas.height / 6 + 50);
+    ctx.fillText('ABGESCHLOSSEN', canvas.width / 2, canvas.height / 6 + 72);
     
-    // Score
+    // Score - MOBILE OPTIMIERT
     const maxScore = getMaxScore();
     const percentage = Math.round((gameState.score / maxScore) * 100);
-    const scoreY = canvas.height / 2 - 40;
+    const scoreY = canvas.height / 2 - 50;
     
-    ctx.font = '36px "Courier New"';
+    ctx.font = '28px "Courier New"';
     ctx.fillStyle = '#fff';
     ctx.fillText(`DEIN SCORE: ${gameState.score}`, canvas.width / 2, scoreY);
     
-    ctx.font = '24px "Courier New"';
+    ctx.font = '16px "Courier New"';
     ctx.fillStyle = '#888';
-    ctx.fillText(`Maximal möglich: ${maxScore}`, canvas.width / 2, scoreY + 45);
+    ctx.fillText(`Maximal möglich: ${maxScore}`, canvas.width / 2, scoreY + 35);
     
-    ctx.font = '28px "Courier New"';
+    ctx.font = '22px "Courier New"';
     ctx.fillStyle = percentage === 100 ? '#0f0' : '#ff0';
-    ctx.fillText(`${percentage}% erreicht`, canvas.width / 2, scoreY + 90);
+    ctx.fillText(`${percentage}% erreicht`, canvas.width / 2, scoreY + 65);
     
     if (percentage === 100) {
-        ctx.font = '20px "Courier New"';
+        ctx.font = '18px "Courier New"';
         ctx.fillStyle = '#0f0';
-        ctx.fillText('★ PERFEKT ★', canvas.width / 2, scoreY + 130);
+        ctx.fillText('★ PERFEKT ★', canvas.width / 2, scoreY + 95);
     }
     
-    // Credits
-    const creditsY = canvas.height - 200;
+    // Credits - MOBILE OPTIMIERT
+    const creditsY = canvas.height - 180;
     
-    ctx.font = 'bold 20px "Courier New"';
+    ctx.font = 'bold 16px "Courier New"';
     ctx.fillStyle = '#fff';
     ctx.fillText('CREDITS', canvas.width / 2, creditsY);
     
-    ctx.font = '16px "Courier New"';
+    ctx.font = '12px "Courier New"';
     ctx.fillStyle = '#aaa';
-    const lineHeight = 25;
+    const lineHeight = 18;
     let line = 0;
     
-    ctx.fillText('Autor: Andreas Weber', canvas.width / 2, creditsY + 40 + (line++ * lineHeight));
+    ctx.fillText('Autor: Andreas Weber', canvas.width / 2, creditsY + 30 + (line++ * lineHeight));
     line++; // Empty line
-    ctx.fillText('Entwickelt mit:', canvas.width / 2, creditsY + 40 + (line++ * lineHeight));
-    ctx.fillText('Claude Sonnet 4.5', canvas.width / 2, creditsY + 40 + (line++ * lineHeight));
-    ctx.fillText('Claude Code', canvas.width / 2, creditsY + 40 + (line++ * lineHeight));
-    ctx.fillText('Roo Code', canvas.width / 2, creditsY + 40 + (line++ * lineHeight));
+    ctx.fillText('Entwickelt mit:', canvas.width / 2, creditsY + 30 + (line++ * lineHeight));
+    ctx.fillText('Claude Sonnet 4.5', canvas.width / 2, creditsY + 30 + (line++ * lineHeight));
+    ctx.fillText('Claude Code', canvas.width / 2, creditsY + 30 + (line++ * lineHeight));
+    ctx.fillText('Roo Code', canvas.width / 2, creditsY + 30 + (line++ * lineHeight));
     
-    // Instructions
-    ctx.font = '18px "Courier New"';
+    // Instructions - MOBILE OPTIMIERT
+    ctx.font = '14px "Courier New"';
     ctx.fillStyle = '#0ff';
-    ctx.fillText('ENTER für Hauptmenü', canvas.width / 2, canvas.height - 40);
+    ctx.fillText('ENTER für Hauptmenü', canvas.width / 2, canvas.height - 30);
 }
 
 // Render touch indicator for mobile
