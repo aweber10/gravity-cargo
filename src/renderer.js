@@ -3,7 +3,7 @@
 
 import { gameState } from './game-state.js';
 import { getShip, getTouchState } from './ship-physics.js';
-import { getCurrentLevel, getWalls, getPlatforms, getMaxScore } from './level-manager.js';
+import { getWalls, getPlatforms, getMaxScore, getLevelTemplates } from './level-manager.js';
 import { isMobile, menu, pauseMenu } from './ui.js';
 
 // Canvas setup
@@ -234,6 +234,13 @@ function renderPauseScreen() {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('PAUSED', canvas.width / 2, canvas.height * 0.2);
+
+    // Level indicator to show current progress
+    const totalLevels = getLevelTemplates().length;
+    ctx.font = '24px "Courier New"';
+    ctx.fillStyle = '#0ff';
+    ctx.fillText(`LEVEL ${gameState.level} / ${totalLevels}`, canvas.width / 2, canvas.height * 0.2 + 50);
+    ctx.fillStyle = '#fff';
     
     // Menu options
     const startY = canvas.height * 0.45;
@@ -280,8 +287,16 @@ function renderLevelComplete() {
     ctx.font = `${completeFontSize} "Courier New"`;
     ctx.textAlign = 'center';
     ctx.fillText('LEVEL COMPLETE!', canvas.width / 2, canvas.height * 0.45);
+
+    // Show how far the player is through the campaign
+    const totalLevels = getLevelTemplates().length;
+    ctx.font = '20px "Courier New"';
+    ctx.fillStyle = '#0ff';
+    ctx.fillText(`LEVEL ${gameState.level} / ${totalLevels}`, canvas.width / 2, canvas.height * 0.45 + 30);
+    ctx.fillStyle = '#fff';
+
     ctx.font = '24px "Courier New"';
-    ctx.fillText(`SCORE: ${gameState.score}`, canvas.width / 2, canvas.height * 0.45 + 40);
+    ctx.fillText(`SCORE: ${gameState.score}`, canvas.width / 2, canvas.height * 0.45 + 80);
 }
 
 // Render game over screen
