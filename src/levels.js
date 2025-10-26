@@ -39,7 +39,7 @@ export const levelTemplates = [
         ],
         platforms: [
             { id: "ALPHA", position: [110, 540], width: 110, startingCargo: null },
-            { id: "BETA", position: [360, 430], width: 80, startingCargo: "EPSILON" },
+            { id: "BETA", position: [380, 500], width: 80, startingCargo: "EPSILON" },
             { id: "GAMMA", position: [650, 160], width: 80, startingCargo: "BETA" },
             { id: "DELTA", position: [260, 230], width: 90, startingCargo: "GAMMA" },
             { id: "EPSILON", position: [720, 530], width: 70, startingCargo: "DELTA" }

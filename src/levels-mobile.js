@@ -46,17 +46,16 @@ export const levelTemplates = [
         platforms: [
             { id: "ALPHA", position: [50, 600], width: 100, startingCargo: null },
             { id: "BETA", position: [225, 400], width: 90, startingCargo: "GAMMA" },
-            { id: "GAMMA", position: [60, 180], width: 100, startingCargo: "ALPHA" },
-            { id: "DELTA", position: [220, 80], width: 100, startingCargo: null }
+            { id: "GAMMA", position: [60, 180], width: 100, startingCargo: "ALPHA" }
         ],
         startPlatform: "ALPHA"
     },
 
-    // Level 3: "Side to Side"
+    // Level 3: "Serpent Corridor" – überarbeitet mit breiteren, geschwungenen Passagen
     {
         levelNumber: 3,
-        name: "Side to Side",
-        fuel: 110,
+        name: "Serpent Corridor",
+        fuel: 115,
         gravity: 0.05,
         scrollDirection: null,
         walls: [
@@ -64,17 +63,17 @@ export const levelTemplates = [
             { points: [[0, 0], [20, 0], [20, 667], [0, 667]], filled: true },
             { points: [[355, 0], [375, 0], [375, 667], [355, 667]], filled: true },
             { points: [[0, 647], [375, 647], [375, 667], [0, 667]], filled: true },
-            // Vertikale Wände für Zick-Zack-Kurs (100px Durchgänge)
-            { points: [[130, 500], [150, 500], [150, 620], [130, 620]], filled: true },
-            { points: [[225, 350], [245, 350], [245, 480], [225, 480]], filled: true },
-            { points: [[130, 200], [150, 200], [150, 330], [130, 330]], filled: true }
+            // Geschwungene Korridor-Begrenzungen mit mindestens doppelter Schiffsbreite
+            { points: [[40, 520], [140, 500], [190, 540], [190, 600], [120, 620], [40, 640]], filled: true },
+            { points: [[120, 190], [190, 160], [230, 210], [230, 300], [150, 330], [120, 300]], filled: true },
+            { points: [[300, 420], [350, 400], [355, 440], [355, 647], [300, 647]], filled: true },
+            { points: [[260, 120], [355, 100], [355, 320], [300, 360], [260, 310]], filled: true }
         ],
         platforms: [
-            { id: "ALPHA", position: [40, 590], width: 80, startingCargo: null },
-            { id: "BETA", position: [165, 540], width: 80, startingCargo: "DELTA" },
-            { id: "GAMMA", position: [40, 380], width: 80, startingCargo: "EPSILON" },
-            { id: "DELTA", position: [260, 290], width: 80, startingCargo: "ALPHA" },
-            { id: "EPSILON", position: [40, 150], width: 90, startingCargo: null }
+            { id: "ALPHA", position: [200, 600], width: 90, startingCargo: null },
+            { id: "BETA", position: [220, 405], width: 80, startingCargo: "EPSILON" },
+            { id: "GAMMA", position: [40, 480], width: 80, startingCargo: "EPSILON" },
+            { id: "EPSILON", position: [180, 140], width: 80, startingCargo: "ALPHA" }
         ],
         startPlatform: "ALPHA"
     },
