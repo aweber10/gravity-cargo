@@ -160,6 +160,7 @@ function isCurrentLevelComplete() {
 
 // Handle level completion
 function levelComplete() {
+    gameState.lastCompletedLevel = gameState.level;
     gameState.state = 'levelcomplete';
     gameState.level++;
     
@@ -168,6 +169,7 @@ function levelComplete() {
         const saveData = {
             level: gameState.level,
             score: gameState.score,
+            lastCompletedLevel: gameState.lastCompletedLevel,
             timestamp: Date.now()
         };
         localStorage.setItem('gravityCargo_saveData', JSON.stringify(saveData));

@@ -72,6 +72,7 @@ export function startNewGame() {
     gameState.level = 1;
     gameState.score = 0;
     gameState.lives = 3;
+    gameState.lastCompletedLevel = 0;
     try {
         localStorage.removeItem('gravityCargo_saveData');
     } catch (e) {
@@ -96,6 +97,9 @@ export function continueGame() {
         if (saveData) {
             gameState.level = saveData.level;
             gameState.score = saveData.score;
+            gameState.lastCompletedLevel = typeof saveData.lastCompletedLevel === 'number'
+                ? saveData.lastCompletedLevel
+                : Math.max(0, saveData.level - 1);
             
             // Initialize level and set ship position
             const startPos = initLevel();
@@ -117,6 +121,7 @@ export function saveGameState() {
         const saveData = {
             level: gameState.level,
             score: gameState.score,
+            lastCompletedLevel: gameState.lastCompletedLevel,
             timestamp: Date.now()
         };
         localStorage.setItem('gravityCargo_saveData', JSON.stringify(saveData));

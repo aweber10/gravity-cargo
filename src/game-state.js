@@ -7,6 +7,7 @@ export const gameState = {
     score: 0,
     lives: 3,
     level: 1,
+    lastCompletedLevel: 0,
     fuel: 100,
     maxFuel: 100,
     currentCargo: null,
@@ -31,6 +32,7 @@ export function resetGameState() {
     gameState.score = 0;
     gameState.lives = 3;
     gameState.level = 1;
+    gameState.lastCompletedLevel = 0;
     gameState.currentCargo = null;
     gameState.deliveredCargo = 0;
     gameState.lastLandedPlatform = null;

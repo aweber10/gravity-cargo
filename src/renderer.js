@@ -290,9 +290,10 @@ function renderLevelComplete() {
 
     // Show how far the player is through the campaign
     const totalLevels = getLevelTemplates().length;
+    const completedLevel = gameState.lastCompletedLevel || Math.max(1, gameState.level - 1);
     ctx.font = '20px "Courier New"';
     ctx.fillStyle = '#0ff';
-    ctx.fillText(`LEVEL ${gameState.level} / ${totalLevels}`, canvas.width / 2, canvas.height * 0.45 + 30);
+    ctx.fillText(`LEVEL ${completedLevel} / ${totalLevels}`, canvas.width / 2, canvas.height * 0.45 + 30);
     ctx.fillStyle = '#fff';
 
     ctx.font = '24px "Courier New"';
