@@ -23,17 +23,26 @@ export const levelTemplates = [
     },
     {
         levelNumber: 2,
-        name: "Platform Hopper",
+        name: "Curved Corridor",
         fuel: 150,
         gravity: 0.05,
         scrollDirection: null,
-        walls: [],
+        walls: [
+            { points: [[0, 0], [800, 0], [800, 20], [0, 20]], filled: true },
+            { points: [[0, 0], [20, 0], [20, 600], [0, 600]], filled: true },
+            { points: [[780, 0], [800, 0], [800, 600], [780, 600]], filled: true },
+            { points: [[0, 580], [800, 580], [800, 600], [0, 600]], filled: true },
+            { points: [[20, 20], [180, 20], [180, 360], [140, 390], [80, 410], [20, 420]], filled: true },
+            { points: [[230, 450], [320, 430], [350, 470], [350, 600], [230, 600]], filled: true },
+            { points: [[400, 20], [530, 20], [530, 280], [490, 310], [430, 320], [400, 300]], filled: true },
+            { points: [[580, 360], [660, 340], [700, 360], [700, 600], [580, 600]], filled: true }
+        ],
         platforms: [
-            { id: "ALPHA", position: [350, 500], width: 100, startingCargo: null },
-            { id: "BETA", position: [150, 150], width: 80, startingCargo: "EPSILON" },
-            { id: "GAMMA", position: [600, 150], width: 80, startingCargo: "BETA" },
-            { id: "DELTA", position: [150, 450], width: 80, startingCargo: "GAMMA" },
-            { id: "EPSILON", position: [600, 450], width: 80, startingCargo: "DELTA" }
+            { id: "ALPHA", position: [110, 540], width: 110, startingCargo: null },
+            { id: "BETA", position: [360, 430], width: 80, startingCargo: "EPSILON" },
+            { id: "GAMMA", position: [650, 160], width: 80, startingCargo: "BETA" },
+            { id: "DELTA", position: [260, 230], width: 90, startingCargo: "GAMMA" },
+            { id: "EPSILON", position: [720, 530], width: 70, startingCargo: "DELTA" }
         ],
         startPlatform: "ALPHA"
     },
