@@ -140,119 +140,111 @@ export const levelTemplates = [
     },
 
     // Level 6: "The Hourglass"
-	{
-		levelNumber: 6,
-		name: "The Hourglass",
-		fuel: 145,
-		gravity: 0.05,
-		scrollDirection: null,
-		walls: [
-			// Rahmen
-			{ points: [[0, 0], [375, 0], [375, 20], [0, 20]], filled: true },
-			{ points: [[0, 0], [20, 0], [20, 667], [0, 667]], filled: true },
-			{ points: [[355, 0], [375, 0], [375, 667], [355, 667]], filled: true },
-			{ points: [[0, 647], [375, 647], [375, 667], [0, 667]], filled: true },
+    {
+        levelNumber: 6,
+        name: "The Hourglass",
+        fuel: 145,
+        gravity: 0.05,
+        scrollDirection: null,
+        walls: [
+            // Rahmen
+            { points: [[0, 0], [375, 0], [375, 20], [0, 20]], filled: true },
+            { points: [[0, 0], [20, 0], [20, 667], [0, 667]], filled: true },
+            { points: [[355, 0], [375, 0], [375, 667], [355, 667]], filled: true },
+            { points: [[0, 647], [375, 647], [375, 667], [0, 667]], filled: true },
 
-			// Obere linke organische Wandmasse
-			{
-				points: [
-					[20, 105],
-					[78, 112],
-					[105, 145],
-					[112, 190],
-					[94, 235],
-					[58, 265],
-					[20, 275]
-				],
-				filled: true
-			},
+            // Obere linke Wandmasse – kürzer und weicher
+            {
+                points: [
+                    [20, 105],
+                    [68, 96],
+                    [95, 122],
+                    [109, 162],
+                    [101, 205],
+                    [76, 241],
+                    [20, 258]
+                ],
+                filled: true
+            },
 
-			// Obere rechte organische Wandmasse
-			{
-				points: [
-					[355, 105],
-					[297, 112],
-					[270, 145],
-					[263, 190],
-					[281, 235],
-					[317, 265],
-					[355, 275]
-				],
-				filled: true
-			},
+            // Obere rechte Wandmasse – asymmetrisch, aber offen
+            {
+                points: [
+                    [355, 106],
+                    [309, 96],
+                    [281, 118],
+                    [264, 156],
+                    [271, 202],
+                    [299, 238],
+                    [355, 252]
+                ],
+                filled: true
+            },
 
-			// Linke mittlere Engstelle – Zentrum bleibt lesbar
-			{
-				points: [
-					[20, 300],
-					[92, 288],
-					[122, 315],
-					[126, 365],
-					[100, 398],
-					[20, 410]
-				],
-				filled: true
-			},
+            // Linke mittlere Engstelle – deutlich entschärft
+            {
+                points: [
+                    [20, 315],
+                    [62, 300],
+                    [84, 318],
+                    [90, 353],
+                    [78, 385],
+                    [20, 403]
+                ],
+                filled: true
+            },
 
-			// Rechte mittlere Engstelle – asymmetrisch, aber fair
-			{
-				points: [
-					[355, 292],
-					[283, 300],
-					[252, 328],
-					[248, 373],
-					[275, 405],
-					[355, 415]
-				],
-				filled: true
-			},
+            // Rechte mittlere Engstelle – ebenfalls weicher
+            {
+                points: [
+                    [355, 300],
+                    [320, 291],
+                    [294, 309],
+                    [285, 342],
+                    [293, 375],
+                    [320, 398],
+                    [355, 406]
+                ],
+                filled: true
+            },
 
-			// Untere linke Wandmasse mit offener Landebucht
-			{
-				points: [
-					[20, 430],
-					[74, 410],
-					[112, 435],
-					[118, 505],
-					[92, 548],
-					[20, 570]
-				],
-				filled: true
-			},
+            // Untere linke Außenkurve – offen für BETA-Anflug
+            {
+                points: [
+                    [20, 432],
+                    [58, 421],
+                    [84, 442],
+                    [91, 501],
+                    [69, 554],
+                    [20, 573]
+                ],
+                filled: true
+            },
 
-			// Untere rechte Wandmasse mit offener Landebucht
-			{
-				points: [
-					[355, 425],
-					[301, 410],
-					[263, 440],
-					[257, 510],
-					[286, 552],
-					[355, 570]
-				],
-				filled: true
-			}
-		],
-		platforms: [
-			// Startplattform
-			{ id: "ALPHA", position: [120, 600], width: 135, startingCargo: null },
-
-			// Haupt-Hub – schmaler, damit man links und rechts vorbeikommt
-			{ id: "DELTA", position: [147, 365], width: 80, startingCargo: "ALPHA" },
-
-			// Untere Seitenplattformen – weiter in den freien Raum gezogen
-			{ id: "BETA", position: [60, 500], width: 70, startingCargo: "EPSILON" },
-			{ id: "GAMMA", position: [245, 500], width: 70, startingCargo: "ZETA" },
-
-			// Obere Seitenplattformen
-			{ id: "EPSILON", position: [50, 245], width: 95, startingCargo: null },
-			{ id: "ZETA", position: [230, 245], width: 95, startingCargo: null },
-
-			// Oberer Zielanker
-			{ id: "THETA", position: [135, 95], width: 105, startingCargo: null }
-		],
-		startPlatform: "ALPHA"
-	},
+            // Untere rechte Außenkurve – offen für GAMMA-Anflug
+            {
+                points: [
+                    [355, 434],
+                    [321, 422],
+                    [294, 444],
+                    [287, 500],
+                    [307, 552],
+                    [355, 565]
+                ],
+                filled: true
+            }
+        ],
+        platforms: [
+            { id: "ALPHA", position: [120, 600], width: 135, startingCargo: null },
+            { id: "BETA", position: [40, 500], width: 75, startingCargo: "EPSILON" },
+            { id: "GAMMA", position: [265, 500], width: 75, startingCargo: "ZETA" },
+            { id: "DELTA", position: [95, 390], width: 65, startingCargo: "ALPHA" },
+            { id: "EPSILON", position: [55, 250], width: 85, startingCargo: null },
+            { id: "ZETA", position: [245, 220], width: 85, startingCargo: null },
+            { id: "THETA", position: [145, 105], width: 95, startingCargo: null }
+        ],
+        startPlatform: "ALPHA"
+    },
 
     // Level 7: "Snake Path"
     {
