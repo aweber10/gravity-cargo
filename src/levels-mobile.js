@@ -233,61 +233,24 @@ export const levelTemplates = [
 				filled: true
 			}
 		],
-
 		platforms: [
 			// Startplattform
-			{
-				id: "ALPHA",
-				position: [120, 600],
-				width: 135,
-				startingCargo: null
-			},
+			{ id: "ALPHA", position: [120, 600], width: 135, startingCargo: null },
 
-			// Haupt-Hub – bewusst breiter als das alte Mini-Plateau
-			{
-				id: "DELTA",
-				position: [135, 365],
-				width: 105,
-				startingCargo: "ALPHA"
-			},
+			// Haupt-Hub – schmaler, damit man links und rechts vorbeikommt
+			{ id: "DELTA", position: [147, 365], width: 80, startingCargo: "ALPHA" },
 
-			// Untere Seitenplattformen – offen erreichbar, keine Sackgassen
-			{
-				id: "BETA",
-				position: [45, 500],
-				width: 90,
-				startingCargo: "EPSILON"
-			},
-			{
-				id: "GAMMA",
-				position: [240, 500],
-				width: 90,
-				startingCargo: "ZETA"
-			},
+			// Untere Seitenplattformen – weiter in den freien Raum gezogen
+			{ id: "BETA", position: [60, 500], width: 70, startingCargo: "EPSILON" },
+			{ id: "GAMMA", position: [245, 500], width: 70, startingCargo: "ZETA" },
 
-			// Obere Seitenplattformen – kurze Vertikalstücke statt Endlosschacht
-			{
-				id: "EPSILON",
-				position: [50, 245],
-				width: 95,
-				startingCargo: null
-			},
-			{
-				id: "ZETA",
-				position: [230, 245],
-				width: 95,
-				startingCargo: null
-			},
+			// Obere Seitenplattformen
+			{ id: "EPSILON", position: [50, 245], width: 95, startingCargo: null },
+			{ id: "ZETA", position: [230, 245], width: 95, startingCargo: null },
 
 			// Oberer Zielanker
-			{
-				id: "THETA",
-				position: [135, 95],
-				width: 105,
-				startingCargo: null
-			}
+			{ id: "THETA", position: [135, 95], width: 105, startingCargo: null }
 		],
-
 		startPlatform: "ALPHA"
 	},
 
