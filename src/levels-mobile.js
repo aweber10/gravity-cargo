@@ -140,35 +140,156 @@ export const levelTemplates = [
     },
 
     // Level 6: "The Hourglass"
-    {
-        levelNumber: 6,
-        name: "The Hourglass",
-        fuel: 140,
-        gravity: 0.05,
-        scrollDirection: null,
-        walls: [
-            { points: [[0, 0], [375, 0], [375, 20], [0, 20]], filled: true },
-            { points: [[0, 0], [20, 0], [20, 667], [0, 667]], filled: true },
-            { points: [[355, 0], [375, 0], [375, 667], [355, 667]], filled: true },
-            { points: [[0, 647], [375, 647], [375, 667], [0, 667]], filled: true },
-            // Sanduhr-Struktur (engste Stelle 100px breit)
-            { points: [[80, 150], [100, 150], [100, 280], [80, 280]], filled: true },
-            { points: [[275, 150], [295, 150], [295, 280], [275, 280]], filled: true },
-            { points: [[125, 310], [145, 310], [145, 360], [125, 360]], filled: true },
-            { points: [[230, 310], [250, 310], [250, 360], [230, 360]], filled: true },
-            { points: [[80, 390], [100, 390], [100, 520], [80, 520]], filled: true },
-            { points: [[275, 390], [295, 390], [295, 520], [275, 520]], filled: true }
-        ],
-        platforms: [
-            { id: "ALPHA", position: [120, 590], width: 135, startingCargo: null },
-            { id: "BETA", position: [30, 440], width: 70, startingCargo: "EPSILON" },
-            { id: "GAMMA", position: [280, 440], width: 70, startingCargo: "ZETA" },
-            { id: "DELTA", position: [160, 330], width: 55, startingCargo: "ALPHA" },
-            { id: "EPSILON", position: [30, 210], width: 70, startingCargo: null },
-            { id: "ZETA", position: [120, 80], width: 100, startingCargo: null }
-        ],
-        startPlatform: "ALPHA"
-    },
+	{
+		levelNumber: 6,
+		name: "The Hourglass",
+		fuel: 145,
+		gravity: 0.05,
+		scrollDirection: null,
+		walls: [
+			// Rahmen
+			{ points: [[0, 0], [375, 0], [375, 20], [0, 20]], filled: true },
+			{ points: [[0, 0], [20, 0], [20, 667], [0, 667]], filled: true },
+			{ points: [[355, 0], [375, 0], [375, 667], [355, 667]], filled: true },
+			{ points: [[0, 647], [375, 647], [375, 667], [0, 667]], filled: true },
+
+			// Obere linke organische Wandmasse
+			{
+				points: [
+					[20, 105],
+					[78, 112],
+					[105, 145],
+					[112, 190],
+					[94, 235],
+					[58, 265],
+					[20, 275]
+				],
+				filled: true
+			},
+
+			// Obere rechte organische Wandmasse
+			{
+				points: [
+					[355, 105],
+					[297, 112],
+					[270, 145],
+					[263, 190],
+					[281, 235],
+					[317, 265],
+					[355, 275]
+				],
+				filled: true
+			},
+
+			// Linke mittlere Engstelle – Zentrum bleibt lesbar
+			{
+				points: [
+					[20, 300],
+					[92, 288],
+					[122, 315],
+					[126, 365],
+					[100, 398],
+					[20, 410]
+				],
+				filled: true
+			},
+
+			// Rechte mittlere Engstelle – asymmetrisch, aber fair
+			{
+				points: [
+					[355, 292],
+					[283, 300],
+					[252, 328],
+					[248, 373],
+					[275, 405],
+					[355, 415]
+				],
+				filled: true
+			},
+
+			// Untere linke Wandmasse mit offener Landebucht
+			{
+				points: [
+					[20, 430],
+					[74, 410],
+					[112, 435],
+					[118, 505],
+					[92, 548],
+					[20, 570]
+				],
+				filled: true
+			},
+
+			// Untere rechte Wandmasse mit offener Landebucht
+			{
+				points: [
+					[355, 425],
+					[301, 410],
+					[263, 440],
+					[257, 510],
+					[286, 552],
+					[355, 570]
+				],
+				filled: true
+			}
+		],
+
+		platforms: [
+			// Startplattform
+			{
+				id: "ALPHA",
+				position: [120, 600],
+				width: 135,
+				startingCargo: null
+			},
+
+			// Haupt-Hub – bewusst breiter als das alte Mini-Plateau
+			{
+				id: "DELTA",
+				position: [135, 365],
+				width: 105,
+				startingCargo: "ALPHA"
+			},
+
+			// Untere Seitenplattformen – offen erreichbar, keine Sackgassen
+			{
+				id: "BETA",
+				position: [45, 500],
+				width: 90,
+				startingCargo: "EPSILON"
+			},
+			{
+				id: "GAMMA",
+				position: [240, 500],
+				width: 90,
+				startingCargo: "ZETA"
+			},
+
+			// Obere Seitenplattformen – kurze Vertikalstücke statt Endlosschacht
+			{
+				id: "EPSILON",
+				position: [50, 245],
+				width: 95,
+				startingCargo: null
+			},
+			{
+				id: "ZETA",
+				position: [230, 245],
+				width: 95,
+				startingCargo: null
+			},
+
+			// Oberer Zielanker
+			{
+				id: "THETA",
+				position: [135, 95],
+				width: 105,
+				startingCargo: null
+			}
+		],
+
+		startPlatform: "ALPHA"
+	},
 
     // Level 7: "Snake Path"
     {
