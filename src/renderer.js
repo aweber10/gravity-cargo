@@ -4,7 +4,7 @@
 import { gameState } from './game-state.js';
 import { getShip, getTouchState } from './ship-physics.js';
 import { getWalls, getPlatforms, getMaxScore, getLevelTemplates } from './level-manager.js';
-import { isMobile, menu, pauseMenu } from './ui.js';
+import { isMobile, menu, pauseMenu, levelSelectMenu } from './ui.js';
 
 // Canvas setup
 const canvas = document.getElementById('gameCanvas');
@@ -52,6 +52,11 @@ export function render() {
     
     if (gameState.state === 'menu') {
         renderMenu();
+        return;
+    }
+    
+    if (gameState.state === 'levelselect') {
+        renderLevelSelect();
         return;
     }
     
@@ -220,6 +225,114 @@ function renderMenu() {
     ctx.fillStyle = '#666';
     ctx.textAlign = 'center';
     ctx.fillText('Idee: Andreas Weber | Spec: Claude Sonnet 4.5 | Code: Claude Code',
+                 canvas.width / 2, canvas.height - 20);
+}
+
+// Render level select screen
+function renderLevelSelect() {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Title
+    ctx.fillStyle = '#fff';
+    const titleFontSize = isMobile ? 'bold 32px' : 'bold 48px';
+    ctx.font = `${titleFontSize} "Courier New"`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('LEVEL AUSWÄHLEN', canvas.width / 2, canvas.height * 0.15);
+    
+    // Get level templates
+    const levelTemplates = getLevelTemplates();
+    
+    // Initialize bounds array for touch/click detection
+    window.levelSelectBounds = [];
+    
+    // Level list
+    const startY = canvas.height * 0.3;
+    const spacing = Math.min(50, canvas.height * 0.06);
+    const buttonWidth = Math.min(350, canvas.width * 0.85);
+    const buttonHeight = 40;
+    const maxVisibleLevels = Math.floor((canvas.height * 0.5) / spacing);
+    
+    // Calculate scroll offset to keep selected level visible
+    if (levelSelectMenu.selectedLevel < levelSelectMenu.scrollOffset + 1) {
+        levelSelectMenu.scrollOffset = levelSelectMenu.selectedLevel - 1;
+    } else if (levelSelectMenu.selectedLevel > levelSelectMenu.scrollOffset + maxVisibleLevels) {
+        levelSelectMenu.scrollOffset = levelSelectMenu.selectedLevel - maxVisibleLevels;
+    }
+    
+    // Render visible levels
+    for (let i = 0; i < Math.min(maxVisibleLevels, levelTemplates.length); i++) {
+        const levelIndex = i + levelSelectMenu.scrollOffset;
+        if (levelIndex >= levelTemplates.length) break;
+        
+        const level = levelTemplates[levelIndex];
+        const y = startY + i * spacing;
+        const isSelected = (levelIndex + 1) === levelSelectMenu.selectedLevel;
+        
+        const buttonX = canvas.width / 2 - buttonWidth / 2;
+        const buttonY = y - buttonHeight / 2;
+        
+        // Highlight selected level
+        if (isSelected) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
+        }
+        
+        // Button border
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(buttonX, buttonY, buttonWidth, buttonHeight);
+        
+        // Level text
+        ctx.font = isMobile ? '18px "Courier New"' : '22px "Courier New"';
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const levelText = `${level.levelNumber} - ${level.name}`;
+        ctx.fillText(levelText, canvas.width / 2, y);
+        
+        // Store bounds for touch/click detection
+        window.levelSelectBounds.push({
+            x: buttonX,
+            y: buttonY,
+            width: buttonWidth,
+            height: buttonHeight,
+            level: level.levelNumber
+        });
+    }
+    
+    // Back button
+    const backY = canvas.height * 0.85;
+    const backButtonWidth = Math.min(200, canvas.width * 0.6);
+    const backButtonHeight = 50;
+    const backButtonX = canvas.width / 2 - backButtonWidth / 2;
+    const backButtonY = backY - backButtonHeight / 2;
+    
+    ctx.strokeStyle = '#888';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(backButtonX, backButtonY, backButtonWidth, backButtonHeight);
+    
+    ctx.font = '20px "Courier New"';
+    ctx.fillStyle = '#888';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('ZURÜCK', canvas.width / 2, backY);
+    
+    // Store back button bounds
+    window.levelSelectBounds.push({
+        x: backButtonX,
+        y: backButtonY,
+        width: backButtonWidth,
+        height: backButtonHeight,
+        level: -1 // Special value for back button
+    });
+    
+    // Instructions
+    ctx.font = isMobile ? '14px "Courier New"' : '16px "Courier New"';
+    ctx.fillStyle = '#666';
+    ctx.textAlign = 'center';
+    ctx.fillText(isMobile ? 'Tap zum Auswählen' : 'Enter zum Auswählen, ESC zurück', 
                  canvas.width / 2, canvas.height - 20);
 }
 

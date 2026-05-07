@@ -61,6 +61,9 @@ export function handleMenuSelection() {
         case 'newgame':
             startNewGame();
             break;
+        case 'training':
+            startTrainingMode();
+            break;
         case 'continue':
             continueGame();
             break;
@@ -144,4 +147,42 @@ export function initGame() {
     setupKeyboardControls();
     setupTouchControls();
     setupClickControls();
+}
+
+// Training mode functions
+export function startTrainingMode() {
+    gameState.state = 'levelselect';
+    gameState.trainingMode = true;
+}
+
+export function handleTrainingLevelSelect(levelNumber) {
+    // Set training mode state
+    gameState.trainingMode = true;
+    gameState.trainingLevel = levelNumber;
+    gameState.level = levelNumber;
+    gameState.lives = 1; // Only one life in training
+    gameState.score = 0; // Reset score for training
+    gameState.currentCargo = null;
+    gameState.deliveredCargo = 0;
+    gameState.lastLandedPlatform = null;
+    gameState.particles = [];
+    
+    // Initialize level and set ship position
+    const startPos = initLevel();
+    setShipPosition(startPos.x, startPos.y);
+    setShipVelocity(0, 0);
+    setShipAngle(startPos.angle);
+    setShipSettling(false);
+    
+    gameState.state = 'playing';
+}
+
+export function exitTrainingMode() {
+    // Reset training mode
+    gameState.trainingMode = false;
+    gameState.trainingLevel = 1;
+    gameState.showLevelSelect = false;
+    
+    // Return to main menu
+    uiInitMenu();
 }

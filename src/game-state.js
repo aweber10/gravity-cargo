@@ -3,7 +3,7 @@
 
 // Game State
 export const gameState = {
-    state: 'menu', // menu, playing, paused, levelcomplete, gameover, gamewon
+    state: 'menu', // menu, playing, paused, levelcomplete, gameover, gamewon, levelselect
     score: 0,
     lives: 3,
     level: 1,
@@ -15,7 +15,11 @@ export const gameState = {
     lastLandedPlatform: null,
     particles: [],
     explosionTime: 0,
-    levelStartScore: 0
+    levelStartScore: 0,
+    // Training mode variables
+    trainingMode: false,
+    trainingLevel: 1,
+    showLevelSelect: false
 };
 
 // Public API
@@ -39,6 +43,9 @@ export function resetGameState() {
     gameState.particles = [];
     gameState.explosionTime = 0;
     gameState.levelStartScore = 0;
+    gameState.trainingMode = false;
+    gameState.trainingLevel = 1;
+    gameState.showLevelSelect = false;
 }
 
 export function updateScore(points) {
@@ -96,4 +103,29 @@ export function setExplosionTime(time) {
 
 export function getExplosionTime() {
     return gameState.explosionTime;
+}
+
+// Training mode functions
+export function setTrainingMode(enabled) {
+    gameState.trainingMode = enabled;
+}
+
+export function isTrainingMode() {
+    return gameState.trainingMode;
+}
+
+export function setTrainingLevel(level) {
+    gameState.trainingLevel = level;
+}
+
+export function getTrainingLevel() {
+    return gameState.trainingLevel;
+}
+
+export function setShowLevelSelect(show) {
+    gameState.showLevelSelect = show;
+}
+
+export function isShowLevelSelect() {
+    return gameState.showLevelSelect;
 }

@@ -3,7 +3,7 @@
 
 import { gameState } from './game-state.js';
 import { getShip, setKeyState, setTouchState, getTouchState } from './ship-physics.js';
-import { togglePause, handleMenuSelection, handlePauseMenuSelection } from './game-flow.js';
+import { togglePause, handleMenuSelection, handlePauseMenuSelection, handleTrainingLevelSelect, exitTrainingMode } from './game-flow.js';
 
 // Device detection
 export const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
@@ -16,8 +16,16 @@ export const menu = {
     selectedOption: 0,
     options: [
         { id: 'newgame', label: 'NEUES SPIEL', enabled: true, bounds: null },
+        { id: 'training', label: 'TRAINING', enabled: true, bounds: null },
         { id: 'continue', label: 'FORTSETZEN', enabled: false, bounds: null }
     ]
+};
+
+// Level select menu state
+export const levelSelectMenu = {
+    selectedLevel: 1,
+    maxLevel: 10,
+    scrollOffset: 0
 };
 
 // Pause menu state
@@ -118,6 +126,11 @@ export function setupKeyboardControls() {
             return;
         }
         
+        if (gameState.state === 'levelselect') {
+            handleLevelSelectNavigation(e);
+            return;
+        }
+        
         if (gameState.state === 'gameover' && (e.key === 'Enter' || e.key === ' ')) {
             e.preventDefault();
             initMenu();
@@ -202,6 +215,32 @@ function handlePauseMenuNavigation(e) {
     }
 }
 
+// Handle level select navigation with keyboard
+function handleLevelSelectNavigation(e) {
+    if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+        e.preventDefault();
+        levelSelectMenu.selectedLevel = Math.max(1, levelSelectMenu.selectedLevel - 1);
+    }
+    if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+        e.preventDefault();
+        levelSelectMenu.selectedLevel = Math.min(levelSelectMenu.maxLevel, levelSelectMenu.selectedLevel + 1);
+    }
+    if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleLevelSelectSelection();
+    }
+    if (e.key === 'Escape') {
+        e.preventDefault();
+        // Zurück zum Hauptmenü
+        gameState.state = 'menu';
+    }
+}
+
+// Handle level select selection
+function handleLevelSelectSelection() {
+    handleTrainingLevelSelect(levelSelectMenu.selectedLevel);
+}
+
 // Setup touch controls
 export function setupTouchControls() {
     const canvas = document.getElementById('gameCanvas');
@@ -218,6 +257,11 @@ export function setupTouchControls() {
         
         if (gameState.state === 'paused') {
             handlePauseMenuTouch(e);
+            return;
+        }
+        
+        if (gameState.state === 'levelselect') {
+            handleLevelSelectTouch(e);
             return;
         }
         
@@ -291,6 +335,24 @@ function handlePauseMenuTouch(e) {
     }
 }
 
+// Handle level select touch events
+function handleLevelSelectTouch(e) {
+    const canvas = document.getElementById('gameCanvas');
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const touchX = touch.clientX - rect.left;
+    const touchY = touch.clientY - rect.top;
+    
+    const selectedLevel = getLevelSelectOptionAtPosition(touchX, touchY);
+    if (selectedLevel > 0) {
+        levelSelectMenu.selectedLevel = selectedLevel;
+        handleLevelSelectSelection();
+    } else if (selectedLevel === -1) {
+        // Zurück button
+        gameState.state = 'menu';
+    }
+}
+
 // Handle canvas click events
 export function setupClickControls() {
     const canvas = document.getElementById('gameCanvas');
@@ -317,6 +379,21 @@ export function setupClickControls() {
             if (selectedOption !== -1) {
                 pauseMenu.selectedOption = selectedOption;
                 handlePauseMenuSelection();
+            }
+        }
+        
+        if (gameState.state === 'levelselect') {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+            
+            const selectedLevel = getLevelSelectOptionAtPosition(clickX, clickY);
+            if (selectedLevel > 0) {
+                levelSelectMenu.selectedLevel = selectedLevel;
+                handleLevelSelectSelection();
+            } else if (selectedLevel === -1) {
+                // Zurück button
+                gameState.state = 'menu';
             }
         }
         
@@ -354,4 +431,19 @@ function getPauseMenuOptionAtPosition(x, y) {
         }
     }
     return -1;
+}
+
+// Get level select option at position
+function getLevelSelectOptionAtPosition(x, y) {
+    // This will be populated by the renderer when drawing level select
+    if (typeof window.levelSelectBounds !== 'undefined') {
+        for (let i = 0; i < window.levelSelectBounds.length; i++) {
+            const bounds = window.levelSelectBounds[i];
+            if (x >= bounds.x && x <= bounds.x + bounds.width && 
+                y >= bounds.y && y <= bounds.y + bounds.height) {
+                return bounds.level;
+            }
+        }
+    }
+    return 0; // No selection
 }

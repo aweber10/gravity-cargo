@@ -235,13 +235,13 @@ export const levelTemplates = [
             }
         ],
         platforms: [
-            { id: "ALPHA", position: [120, 600], width: 135, startingCargo: null },
-            { id: "BETA", position: [40, 500], width: 75, startingCargo: "EPSILON" },
-            { id: "GAMMA", position: [265, 500], width: 75, startingCargo: "ZETA" },
-            { id: "DELTA", position: [95, 390], width: 65, startingCargo: "ALPHA" },
-            { id: "EPSILON", position: [55, 250], width: 85, startingCargo: null },
-            { id: "ZETA", position: [245, 220], width: 85, startingCargo: null },
-            { id: "THETA", position: [145, 105], width: 95, startingCargo: null }
+            { id: "ALPHA", position: [200, 600], width: 70, startingCargo: null },
+            { id: "BETA", position: [40, 555], width: 75, startingCargo: "EPSILON" },
+            { id: "GAMMA", position: [265, 435], width: 75, startingCargo: "ZETA" },
+            { id: "DELTA", position: [95, 430], width: 65, startingCargo: "ALPHA" },
+            { id: "EPSILON", position: [55, 285], width: 85, startingCargo: null },
+            { id: "ZETA", position: [245, 240], width: 85, startingCargo: null },
+            { id: "THETA", position: [155, 105], width: 75, startingCargo: null }
         ],
         startPlatform: "ALPHA"
     },

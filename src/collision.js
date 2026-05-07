@@ -6,6 +6,7 @@ import { getShip, setShipPosition, setShipVelocity, setShipAngle, setShipSettlin
 import { getCurrentLevel, getWalls, getPlatforms, initLevel } from './level-manager.js';
 import { playSound } from './audio.js?v=11';
 import { PHYSICS } from './config.js?v=11';
+import { exitTrainingMode } from './game-flow.js';
 
 // Create explosion effect
 export function createExplosion(x, y) {
@@ -122,12 +123,18 @@ export function explode() {
     gameState.explosionTime = 1000;
     
     setTimeout(() => {
-        gameState.lives--;
-        if (gameState.lives <= 0) {
-            gameState.state = 'gameover';
+        if (gameState.trainingMode) {
+            // In training mode: direct return to main menu
+            exitTrainingMode();
         } else {
-            respawn();
-            gameState.state = 'playing';
+            // Normal game mode
+            gameState.lives--;
+            if (gameState.lives <= 0) {
+                gameState.state = 'gameover';
+            } else {
+                respawn();
+                gameState.state = 'playing';
+            }
         }
     }, 1000);
 }
@@ -160,6 +167,15 @@ function isCurrentLevelComplete() {
 
 // Handle level completion
 function levelComplete() {
+    if (gameState.trainingMode) {
+        // In training mode: direct return to main menu
+        setTimeout(() => {
+            exitTrainingMode();
+        }, 2000);
+        return;
+    }
+    
+    // Normal game mode
     gameState.lastCompletedLevel = gameState.level;
     gameState.state = 'levelcomplete';
     gameState.level++;
