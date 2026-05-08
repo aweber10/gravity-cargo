@@ -249,17 +249,21 @@ function renderLevelSelect() {
     
     // Level list
     const startY = canvas.height * 0.3;
-    const spacing = Math.min(50, canvas.height * 0.06);
+    const spacing = Math.min(45, canvas.height * 0.055); // Slightly smaller for more levels
     const buttonWidth = Math.min(350, canvas.width * 0.85);
-    const buttonHeight = 40;
-    const maxVisibleLevels = Math.floor((canvas.height * 0.5) / spacing);
+    const buttonHeight = 35; // Slightly smaller buttons
+    const maxVisibleLevels = Math.min(10, Math.floor((canvas.height * 0.55) / spacing)); // Allow more space
     
     // Calculate scroll offset to keep selected level visible
+    const totalLevels = levelTemplates.length;
     if (levelSelectMenu.selectedLevel < levelSelectMenu.scrollOffset + 1) {
-        levelSelectMenu.scrollOffset = levelSelectMenu.selectedLevel - 1;
+        levelSelectMenu.scrollOffset = Math.max(0, levelSelectMenu.selectedLevel - 1);
     } else if (levelSelectMenu.selectedLevel > levelSelectMenu.scrollOffset + maxVisibleLevels) {
-        levelSelectMenu.scrollOffset = levelSelectMenu.selectedLevel - maxVisibleLevels;
+        levelSelectMenu.scrollOffset = Math.min(totalLevels - maxVisibleLevels, levelSelectMenu.selectedLevel - maxVisibleLevels);
     }
+    
+    // Ensure scroll offset is within bounds
+    levelSelectMenu.scrollOffset = Math.max(0, Math.min(totalLevels - maxVisibleLevels, levelSelectMenu.scrollOffset));
     
     // Render visible levels
     for (let i = 0; i < Math.min(maxVisibleLevels, levelTemplates.length); i++) {
@@ -328,11 +332,30 @@ function renderLevelSelect() {
         level: -1 // Special value for back button
     });
     
+    // Scroll indicators
+    if (totalLevels > maxVisibleLevels) {
+        ctx.font = '14px "Courier New"';
+        ctx.fillStyle = '#666';
+        ctx.textAlign = 'center';
+        
+        if (levelSelectMenu.scrollOffset > 0) {
+            ctx.fillText('↑ Mehr Level oben', canvas.width / 2, startY - 20);
+        }
+        if (levelSelectMenu.scrollOffset + maxVisibleLevels < totalLevels) {
+            ctx.fillText('↓ Mehr Level unten', canvas.width / 2, backY - 60);
+        }
+        
+        // Show current position
+        const currentRange = `${levelSelectMenu.scrollOffset + 1}-${Math.min(levelSelectMenu.scrollOffset + maxVisibleLevels, totalLevels)} von ${totalLevels}`;
+        ctx.fillStyle = '#888';
+        ctx.fillText(currentRange, canvas.width / 2, backY - 40);
+    }
+    
     // Instructions
     ctx.font = isMobile ? '14px "Courier New"' : '16px "Courier New"';
     ctx.fillStyle = '#666';
     ctx.textAlign = 'center';
-    ctx.fillText(isMobile ? 'Tap zum Auswählen' : 'Enter zum Auswählen, ESC zurück', 
+    ctx.fillText(isMobile ? 'Tap zum Auswählen' : 'Pfeiltasten zum Scrollen, Enter zum Auswählen', 
                  canvas.width / 2, canvas.height - 20);
 }
 
@@ -348,11 +371,11 @@ function renderPauseScreen() {
     ctx.textBaseline = 'middle';
     ctx.fillText('PAUSED', canvas.width / 2, canvas.height * 0.2);
 
-    // Level indicator to show current progress
-    const totalLevels = getLevelTemplates().length;
+    // Level indicator to show current progress  
+    const pauseTotalLevels = getLevelTemplates().length;
     ctx.font = '24px "Courier New"';
     ctx.fillStyle = '#0ff';
-    ctx.fillText(`LEVEL ${gameState.level} / ${totalLevels}`, canvas.width / 2, canvas.height * 0.2 + 50);
+    ctx.fillText(`LEVEL ${gameState.level} / ${pauseTotalLevels}`, canvas.width / 2, canvas.height * 0.2 + 50);
     ctx.fillStyle = '#fff';
     
     // Menu options
@@ -402,11 +425,11 @@ function renderLevelComplete() {
     ctx.fillText('LEVEL COMPLETE!', canvas.width / 2, canvas.height * 0.45);
 
     // Show how far the player is through the campaign
-    const totalLevels = getLevelTemplates().length;
+    const completeTotalLevels = getLevelTemplates().length;
     const completedLevel = gameState.lastCompletedLevel || Math.max(1, gameState.level - 1);
     ctx.font = '20px "Courier New"';
     ctx.fillStyle = '#0ff';
-    ctx.fillText(`LEVEL ${completedLevel} / ${totalLevels}`, canvas.width / 2, canvas.height * 0.45 + 30);
+    ctx.fillText(`LEVEL ${completedLevel} / ${completeTotalLevels}`, canvas.width / 2, canvas.height * 0.45 + 30);
     ctx.fillStyle = '#fff';
 
     ctx.font = '24px "Courier New"';

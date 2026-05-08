@@ -353,44 +353,166 @@ export const levelTemplates = [
         startPlatform: "ALPHA"
     },
 
-    // Level 10: "Vertical Maze"
+    // Level 10: "Organic Vertical Maze"
     {
         levelNumber: 10,
-        name: "Vertical Maze",
-        fuel: 220,
+        name: "Organic Vertical Maze",
+        fuel: 240,
         gravity: 0.05,
         scrollDirection: null,
         walls: [
+            // Rahmen
             { points: [[0, 0], [375, 0], [375, 20], [0, 20]], filled: true },
             { points: [[0, 0], [20, 0], [20, 667], [0, 667]], filled: true },
             { points: [[355, 0], [375, 0], [375, 667], [355, 667]], filled: true },
             { points: [[0, 647], [375, 647], [375, 667], [0, 667]], filled: true },
-            // Komplexes Labyrinth - VEREINFACHT
-            // Obere Sektion - BREITER
-            { points: [[90, 80], [110, 80], [110, 200], [90, 200]], filled: true },
-            { points: [[265, 80], [285, 80], [285, 200], [265, 200]], filled: true },
-            // Horizontale Wand über GAMMA ENTFERNT für Freiraum
-            // Mittlere Sektion - BREITER, linke Wand VERKÜRZT für EPSILON
-            { points: [[50, 240], [70, 240], [70, 340], [50, 340]], filled: true },
-            { points: [[165, 260], [185, 260], [185, 380], [165, 380]], filled: true },
-            { points: [[305, 240], [325, 240], [325, 360], [305, 360]], filled: true },
-            { points: [[70, 300], [165, 300], [165, 320], [70, 320]], filled: true },
-            // Untere Sektion - BREITER
-            { points: [[120, 420], [140, 420], [140, 540], [120, 540]], filled: true },
-            { points: [[235, 420], [255, 420], [255, 540], [235, 540]], filled: true },
-            // Finale Barriere - VERKÜRZT
-            { points: [[20, 570], [100, 570], [100, 590], [20, 590]], filled: true },
-            { points: [[275, 570], [355, 570], [355, 590], [275, 590]], filled: true }
+
+            // Obere linke Spiralformation
+            {
+                points: [
+                    [20, 90],
+                    [55, 75],
+                    [85, 95],
+                    [105, 135],
+                    [95, 175],
+                    [65, 195],
+                    [35, 185],
+                    [25, 150],
+                    [35, 115],
+                    [20, 105]
+                ],
+                filled: true
+            },
+
+            // Obere rechte Zackenwand
+            {
+                points: [
+                    [355, 85],
+                    [320, 70],
+                    [285, 90],
+                    [270, 130],
+                    [280, 170],
+                    [305, 190],
+                    [330, 185],
+                    [350, 155],
+                    [355, 120]
+                ],
+                filled: true
+            },
+
+            // Mittlere linke Serpentine mit Höhle
+            {
+                points: [
+                    [20, 260],
+                    [75, 245],
+                    [110, 265],
+                    [125, 305],
+                    [115, 345],
+                    [85, 370],
+                    [50, 375],
+                    [25, 355],
+                    [20, 320],
+                    [30, 285]
+                ],
+                filled: true
+            },
+
+            // Mittlere rechte Wellenformation
+            {
+                points: [
+                    [355, 250],
+                    [310, 235],
+                    [275, 255],
+                    [260, 295],
+                    [275, 335],
+                    [310, 355],
+                    [340, 350],
+                    [355, 315],
+                    [345, 275]
+                ],
+                filled: true
+            },
+
+            // Mittlere Verbindungsbrücke
+            {
+                points: [
+                    [125, 310],
+                    [165, 300],
+                    [205, 315],
+                    [220, 330],
+                    [205, 345],
+                    [165, 350],
+                    [125, 335]
+                ],
+                filled: true
+            },
+
+            // Untere linke Höhlenwand mit schräger Öffnung
+            {
+                points: [
+                    [20, 430],
+                    [65, 415],
+                    [95, 435],
+                    [110, 465],
+                    [105, 505],
+                    [85, 535],
+                    [55, 545],
+                    [25, 535],
+                    [20, 500],
+                    [25, 465]
+                ],
+                filled: true
+            },
+
+            // Untere rechte Stalaktiten-Cluster
+            {
+                points: [
+                    [330, 440],
+                    [300, 425],
+                    [280, 445],
+                    [270, 485],
+                    [285, 525],
+                    [310, 535],
+                    [335, 520],
+                    [345, 480],
+                    [340, 455]
+                ],
+                filled: true
+            },
+
+            // Finale untere Barriere - organisch
+            {
+                points: [
+                    [20, 570],
+                    [85, 565],
+                    [110, 575],
+                    [120, 590],
+                    [110, 605],
+                    [20, 615]
+                ],
+                filled: true
+            },
+            {
+                points: [
+                    [255, 570],
+                    [320, 565],
+                    [345, 575],
+                    [355, 590],
+                    [345, 605],
+                    [255, 615]
+                ],
+                filled: true
+            }
         ],
         platforms: [
-            { id: "ALPHA", position: [130, 615], width: 115, startingCargo: null },
-            { id: "BETA", position: [25, 150], width: 70, startingCargo: "ETA" },
-            { id: "GAMMA", position: [135, 110], width: 65, startingCargo: "THETA" },
-            { id: "DELTA", position: [290, 150], width: 70, startingCargo: null },
-            { id: "EPSILON", position: [80, 390], width: 75, startingCargo: "ZETA" },
-            { id: "ZETA", position: [210, 390], width: 75, startingCargo: "ALPHA" },
-            { id: "ETA", position: [155, 470], width: 65, startingCargo: null },
-            { id: "THETA", position: [25, 530], width: 75, startingCargo: null }
+            { id: "ALPHA", position: [175, 630], width: 85, startingCargo: null },
+            { id: "BETA", position: [50, 220], width: 55, startingCargo: "ETA" },
+            { id: "GAMMA", position: [200, 130], width: 50, startingCargo: "THETA" },
+            { id: "DELTA", position: [315, 230], width: 60, startingCargo: null },
+            { id: "EPSILON", position: [70, 415], width: 45, startingCargo: "ZETA" },
+            { id: "ZETA", position: [280, 395], width: 55, startingCargo: "ALPHA" },
+            { id: "ETA", position: [185, 480], width: 50, startingCargo: null },
+            { id: "THETA", position: [155, 540], width: 60, startingCargo: null }
         ],
         startPlatform: "ALPHA"
     }
