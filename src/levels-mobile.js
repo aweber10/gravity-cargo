@@ -90,7 +90,7 @@ export const levelTemplates = [
             { points: [[0, 0], [20, 0], [20, 667], [0, 667]], filled: true },
             { points: [[355, 0], [375, 0], [375, 667], [355, 667]], filled: true },
             { points: [[0, 647], [375, 647], [375, 667], [0, 667]], filled: true },
-            // Kaminstruktur - ENDGÜLTIG KORRIGIERT
+            // Kaminstruktur 
             // Linke Wand: von oben (y=150) bis zum unteren Querbalken (y=400)
             { points: [[120, 150], [140, 150], [140, 400], [120, 400]], filled: true },
             // Rechte Wand: vom oberen Querbalken (y=290) bis unten (y=520)
@@ -235,12 +235,12 @@ export const levelTemplates = [
             }
         ],
         platforms: [
-            { id: "ALPHA", position: [200, 600], width: 70, startingCargo: null },
-            { id: "BETA", position: [40, 555], width: 75, startingCargo: "EPSILON" },
-            { id: "GAMMA", position: [265, 435], width: 75, startingCargo: "ZETA" },
-            { id: "DELTA", position: [95, 430], width: 65, startingCargo: "ALPHA" },
-            { id: "EPSILON", position: [55, 285], width: 85, startingCargo: null },
-            { id: "ZETA", position: [245, 240], width: 85, startingCargo: null },
+            { id: "ALPHA", position: [245, 620], width: 70, startingCargo: null },
+            { id: "BETA", position: [40, 590], width: 75, startingCargo: "EPSILON" },
+            { id: "GAMMA", position: [265, 430], width: 75, startingCargo: "ZETA" },
+            { id: "DELTA", position: [76, 420], width: 65, startingCargo: "ALPHA" },
+            { id: "EPSILON", position: [50, 290], width: 85, startingCargo: null },
+            { id: "ZETA", position: [245, 250], width: 85, startingCargo: null },
             { id: "THETA", position: [155, 105], width: 75, startingCargo: null }
         ],
         startPlatform: "ALPHA"
