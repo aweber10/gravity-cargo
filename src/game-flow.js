@@ -153,6 +153,7 @@ export function initGame() {
 export function startTrainingMode() {
     gameState.state = 'levelselect';
     gameState.trainingMode = true;
+    gameState.showLevelSelect = true;
 }
 
 export function handleTrainingLevelSelect(levelNumber) {
@@ -166,6 +167,7 @@ export function handleTrainingLevelSelect(levelNumber) {
     gameState.deliveredCargo = 0;
     gameState.lastLandedPlatform = null;
     gameState.particles = [];
+    gameState.showLevelSelect = false; // Reset level select when starting a level
     
     // Initialize level and set ship position
     const startPos = initLevel();
@@ -178,10 +180,18 @@ export function handleTrainingLevelSelect(levelNumber) {
 }
 
 export function exitTrainingMode() {
-    // Reset training mode
+    // Reset training mode completely
     gameState.trainingMode = false;
     gameState.trainingLevel = 1;
     gameState.showLevelSelect = false;
+    
+    // Reset level to avoid confusion with normal game
+    gameState.level = 1;
+    gameState.score = 0;
+    gameState.lives = 3;
+    gameState.currentCargo = null;
+    gameState.deliveredCargo = 0;
+    gameState.particles = [];
     
     // Return to main menu
     uiInitMenu();

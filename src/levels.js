@@ -232,33 +232,186 @@ export const levelTemplates = [
     },
     {
         levelNumber: 10,
-        name: "Final Challenge",
-        fuel: 220,
+        name: "Organic Cathedral",
+        fuel: 280,
         gravity: 0.05,
         scrollDirection: null,
         walls: [
+            // Rahmen
             { points: [[0, 0], [800, 0], [800, 20], [0, 20]], filled: true },
             { points: [[0, 0], [20, 0], [20, 600], [0, 600]], filled: true },
             { points: [[780, 0], [800, 0], [800, 600], [780, 600]], filled: true },
             { points: [[0, 580], [800, 580], [800, 600], [0, 600]], filled: true },
-            { points: [[180, 150], [200, 150], [200, 300], [180, 300]], filled: true },
-            { points: [[280, 250], [300, 250], [300, 400], [280, 400]], filled: true },
-            { points: [[380, 150], [400, 150], [400, 300], [380, 300]], filled: true },
-            { points: [[480, 250], [500, 250], [500, 400], [480, 400]], filled: true },
-            { points: [[580, 150], [600, 150], [600, 300], [580, 300]], filled: true },
-            { points: [[100, 350], [280, 350], [280, 370], [100, 370]], filled: true },
-            { points: [[300, 200], [380, 200], [380, 220], [300, 220]], filled: true },
-            { points: [[400, 350], [480, 350], [480, 370], [400, 370]], filled: true },
-            { points: [[500, 200], [680, 200], [680, 220], [500, 220]], filled: true }
+
+            // Linke Kathedralenwand mit Nische
+            {
+                points: [
+                    [20, 580],
+                    [120, 560],
+                    [130, 520],
+                    [140, 480],
+                    [150, 440],
+                    [140, 400],
+                    [120, 360],
+                    [100, 330],
+                    [80, 300],
+                    [70, 260],
+                    [80, 220],
+                    [110, 190],
+                    [150, 170],
+                    [190, 160],
+                    [230, 150],
+                    [270, 145],
+                    [310, 150],
+                    [20, 150],
+                    [20, 580]
+                ],
+                filled: true
+            },
+
+            // Rechte Kathedralenwand mit Nische
+            {
+                points: [
+                    [780, 580],
+                    [680, 560],
+                    [650, 520],
+                    [630, 480],
+                    [620, 440],
+                    [630, 400],
+                    [650, 360],
+                    [680, 330],
+                    [710, 300],
+                    [720, 260],
+                    [710, 220],
+                    [680, 190],
+                    [640, 170],
+                    [600, 160],
+                    [560, 150],
+                    [520, 145],
+                    [480, 150],
+                    [780, 150],
+                    [780, 580]
+                ],
+                filled: true
+            },
+
+            // Zentrale organische Säule (verkürzt auf GAMMA-Höhe)
+            {
+                points: [
+                    [350, 580],
+                    [370, 570],
+                    [390, 550],
+                    [400, 520],
+                    [395, 480],
+                    [385, 440],
+                    [390, 400],
+                    [405, 360],
+                    [415, 320],
+                    [410, 280],
+                    [400, 240],
+                    [390, 200],
+                    [385, 180],
+                    [410, 180],
+                    [435, 180],
+                    [430, 200],
+                    [420, 240],
+                    [425, 280],
+                    [420, 320],
+                    [435, 360],
+                    [450, 400],
+                    [445, 440],
+                    [435, 480],
+                    [440, 520],
+                    [450, 550],
+                    [470, 570],
+                    [490, 580],
+                    [350, 580]
+                ],
+                filled: true
+            },
+
+            // Obere Gewölbedecke (links)
+            {
+                points: [
+                    [310, 150],
+                    [340, 140],
+                    [360, 130],
+                    [370, 110],
+                    [360, 90],
+                    [340, 80],
+                    [300, 70],
+                    [250, 50],
+                    [200, 40],
+                    [150, 30],
+                    [100, 20],
+                    [20, 20],
+                    [20, 150],
+                    [310, 150]
+                ],
+                filled: true
+            },
+
+            // Obere Gewölbedecke (rechts)
+            {
+                points: [
+                    [490, 150],
+                    [460, 140],
+                    [440, 130],
+                    [430, 110],
+                    [440, 90],
+                    [460, 80],
+                    [500, 70],
+                    [550, 50],
+                    [600, 40],
+                    [650, 30],
+                    [700, 20],
+                    [780, 20],
+                    [780, 150],
+                    [490, 150]
+                ],
+                filled: true
+            },
+
+            // Linke Nischen-Inselchen
+            {
+                points: [
+                    [90, 380],
+                    [130, 370],
+                    [150, 380],
+                    [160, 400],
+                    [150, 420],
+                    [130, 430],
+                    [90, 420],
+                    [80, 400],
+                    [90, 380]
+                ],
+                filled: true
+            },
+
+            // Rechte Nischen-Inselchen
+            {
+                points: [
+                    [710, 380],
+                    [670, 370],
+                    [650, 380],
+                    [640, 400],
+                    [650, 420],
+                    [670, 430],
+                    [710, 420],
+                    [720, 400],
+                    [710, 380]
+                ],
+                filled: true
+            }
         ],
         platforms: [
-            { id: "ALPHA", position: [50, 520], width: 80, startingCargo: null },
-            { id: "BETA", position: [120, 300], width: 50, startingCargo: "ZETA" },
-            { id: "GAMMA", position: [220, 200], width: 50, startingCargo: "EPSILON" },
-            { id: "DELTA", position: [320, 300], width: 50, startingCargo: "THETA" },
-            { id: "EPSILON", position: [420, 200], width: 50, startingCargo: "ALPHA" },
-            { id: "ZETA", position: [620, 450], width: 70, startingCargo: null },
-            { id: "THETA", position: [700, 350], width: 70, startingCargo: null }
+            { id: "ALPHA", position: [200, 540], width: 90, startingCargo: null },
+            { id: "BETA", position: [120, 340], width: 70, startingCargo: "THETA" },
+            { id: "GAMMA", position: [385, 180], width: 50, startingCargo: "EPSILON" },
+            { id: "DELTA", position: [560, 340], width: 70, startingCargo: "ZETA" },
+            { id: "EPSILON", position: [450, 280], width: 55, startingCargo: "ALPHA" },
+            { id: "ZETA", position: [600, 540], width: 80, startingCargo: null },
+            { id: "THETA", position: [300, 70], width: 60, startingCargo: null }
         ],
         startPlatform: "ALPHA"
     }

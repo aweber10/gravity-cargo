@@ -1,7 +1,7 @@
 // src/renderer.js
 // Handles all rendering operations for the game
 
-import { gameState } from './game-state.js';
+import { gameState, isShowLevelSelect } from './game-state.js';
 import { getShip, getTouchState } from './ship-physics.js';
 import { getWalls, getPlatforms, getMaxScore, getLevelTemplates } from './level-manager.js';
 import { isMobile, menu, pauseMenu, levelSelectMenu } from './ui.js';
@@ -55,7 +55,7 @@ export function render() {
         return;
     }
     
-    if (gameState.state === 'levelselect') {
+    if (gameState.state === 'levelselect' && isShowLevelSelect()) {
         renderLevelSelect();
         return;
     }

@@ -85,10 +85,10 @@ export function initMenu() {
     try {
         const data = localStorage.getItem('gravityCargo_saveData');
         const saveData = data ? JSON.parse(data) : null;
-        menu.options[1].enabled = !!saveData;
+        menu.options[2].enabled = !!saveData;
     } catch (e) {
         console.error('Load failed:', e);
-        menu.options[1].enabled = false;
+        menu.options[2].enabled = false;
     }
     
     // Set selected option to first enabled entry
@@ -104,6 +104,7 @@ export function initMenu() {
     }
     
     gameState.state = 'menu';
+    window.levelSelectBounds = [];
 }
 
 // Handle keyboard events
@@ -232,7 +233,7 @@ function handleLevelSelectNavigation(e) {
     if (e.key === 'Escape') {
         e.preventDefault();
         // Zurück zum Hauptmenü
-        gameState.state = 'menu';
+        exitTrainingMode();
     }
 }
 
@@ -349,7 +350,7 @@ function handleLevelSelectTouch(e) {
         handleLevelSelectSelection();
     } else if (selectedLevel === -1) {
         // Zurück button
-        gameState.state = 'menu';
+        exitTrainingMode();
     }
 }
 
@@ -368,6 +369,7 @@ export function setupClickControls() {
                 menu.selectedOption = selectedOption;
                 handleMenuSelection();
             }
+            return;
         }
         
         if (gameState.state === 'paused') {
@@ -380,6 +382,7 @@ export function setupClickControls() {
                 pauseMenu.selectedOption = selectedOption;
                 handlePauseMenuSelection();
             }
+            return;
         }
         
         if (gameState.state === 'levelselect') {
@@ -393,8 +396,9 @@ export function setupClickControls() {
                 handleLevelSelectSelection();
             } else if (selectedLevel === -1) {
                 // Zurück button
-                gameState.state = 'menu';
+                exitTrainingMode();
             }
+            return;
         }
         
         if (gameState.state === 'gamewon') {
