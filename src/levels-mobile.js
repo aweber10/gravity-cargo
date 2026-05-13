@@ -304,8 +304,8 @@ export const levelTemplates = [
         platforms: [
             { id: "ALPHA", position: [130, 600], width: 115, startingCargo: null },
             { id: "BETA", position: [25, 550], width: 70, startingCargo: "ZETA" },
-            { id: "GAMMA", position: [110, 420], width: 70, startingCargo: "THETA" },
-            { id: "DELTA", position: [285, 410], width: 65, startingCargo: "EPSILON" },
+            { id: "GAMMA", position: [110, 430], width: 70, startingCargo: "THETA" },
+            { id: "DELTA", position: [285, 420], width: 65, startingCargo: "EPSILON" },
             { id: "EPSILON", position: [155, 290], width: 70, startingCargo: "ALPHA" },
             { id: "ZETA", position: [110, 180], width: 70, startingCargo: null },
             { id: "THETA", position: [200, 80], width: 80, startingCargo: null }
