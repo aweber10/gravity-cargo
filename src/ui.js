@@ -4,11 +4,9 @@
 import { gameState } from './game-state.js';
 import { getShip, setKeyState, setTouchState, getTouchState } from './ship-physics.js';
 import { togglePause, handleMenuSelection, handlePauseMenuSelection, handleTrainingLevelSelect, exitTrainingMode } from './game-flow.js';
-
-// Device detection
-export const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
-                   ('ontouchstart' in window) ||
-                   (navigator.maxTouchPoints > 0);
+import { getMaxLevelCount } from './level-manager.js';
+import { isMobile } from "./device-detection.js";
+export { isMobile };
 
 // Menu state
 export const menu = {
@@ -24,7 +22,6 @@ export const menu = {
 // Level select menu state
 export const levelSelectMenu = {
     selectedLevel: 1,
-    maxLevel: 10,
     scrollOffset: 0
 };
 
@@ -224,7 +221,7 @@ function handleLevelSelectNavigation(e) {
     }
     if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
         e.preventDefault();
-        levelSelectMenu.selectedLevel = Math.min(levelSelectMenu.maxLevel, levelSelectMenu.selectedLevel + 1);
+        levelSelectMenu.selectedLevel = Math.min(getMaxLevelCount(), levelSelectMenu.selectedLevel + 1);
     }
     if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();

@@ -6,14 +6,31 @@ import { PHYSICS } from './config.js?v=12';
 import { levelTemplates as desktopLevels, calculateMaxScore } from './levels.js?v=12';
 import { levelTemplates as mobileLevels } from './levels-mobile.js?v=12';
 import { playSound } from './audio.js?v=12';
-
-// Device detection for level selection
-const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
-               ('ontouchstart' in window) ||
-               (navigator.maxTouchPoints > 0);
+import { isMobile } from "./device-detection.js";
 
 // Select appropriate level templates based on device
 const levelTemplates = isMobile ? mobileLevels : desktopLevels;
+
+// TODO: TESTPHASE - Nach Tests auf 'false' setzen um Level 11 nur durch normale Progression erreichbar zu machen
+const LEVEL_11_TEST_MODE = true;
+
+// Get maximum level count dynamically
+export function getMaxLevelCount() {
+    const baseCount = levelTemplates.length;
+    
+    // Console warning für aktiven Test-Modus
+    if (LEVEL_11_TEST_MODE && baseCount > 10 && isMobile) {
+        console.log('⚠️  LEVEL 11 TEST MODE AKTIV - Level 11 ist in Training verfügbar');
+    }
+    
+    // Während Testphase: Level 11 in Training verfügbar
+    // Nach Tests: Level 11 nur durch normale Progression erreichbar
+    if (!LEVEL_11_TEST_MODE && baseCount > 10 && isMobile) {
+        return 10; // Versteckt Level 11 aus Training-Menü (nur Mobile hat Level 11)
+    }
+    
+    return baseCount;
+}
 
 // Current level data
 let currentLevel = null;

@@ -515,5 +515,121 @@ export const levelTemplates = [
             { id: "THETA", position: [155, 540], width: 60, startingCargo: null }
         ],
         startPlatform: "ALPHA"
+    },
+
+    // Level 11: "Bio Tunnel Labyrinth"
+    {
+        levelNumber: 11,
+        name: "Bio Tunnel Labyrinth",
+        fuel: 280,
+        gravity: 0.05,
+        scrollDirection: null,
+        walls: [
+            // Rahmen
+            { points: [[0, 0], [375, 0], [375, 20], [0, 20]], filled: true },
+            { points: [[0, 0], [20, 0], [20, 667], [0, 667]], filled: true },
+            { points: [[355, 0], [375, 0], [375, 667], [355, 667]], filled: true },
+            { points: [[0, 647], [375, 647], [375, 667], [0, 667]], filled: true },
+
+            // Kammer 1: Einstiegshöhle (oben links)
+            {
+                points: [
+                    [20, 80], [85, 70], [115, 95], [125, 135],
+                    [120, 175], [105, 205], [80, 225], [50, 235],
+                    [25, 225], [20, 190], [25, 150], [35, 115]
+                ],
+                filled: true
+            },
+
+            // Kammer 2: Spiraltunnel (oben rechts)
+            {
+                points: [
+                    [355, 90], [315, 80], [280, 100], [265, 140],
+                    [270, 180], [285, 215], [310, 240], [335, 245],
+                    [355, 235], [350, 200], [340, 165], [345, 130]
+                ],
+                filled: true
+            },
+
+            // Horizontale Verbindung Kammer 1 → 2 (obere Begrenzung)
+            {
+                points: [
+                    [125, 220], [265, 210], [265, 230], [125, 230]
+                ],
+                filled: true
+            },
+            // Horizontale Verbindung Kammer 1 → 2 (untere Begrenzung für 40px Korridor)
+            {
+                points: [
+                    [125, 270], [265, 270], [265, 290], [125, 290]
+                ],
+                filled: true
+            },
+
+            // Kammer 3: Zentrale Kaverne (mitte-unten links)
+            {
+                points: [
+                    [20, 320], [75, 310], [125, 325], [160, 355],
+                    [175, 395], [165, 435], [145, 465], [115, 485],
+                    [80, 495], [45, 490], [20, 470], [25, 430],
+                    [30, 390], [25, 350]
+                ],
+                filled: true
+            },
+
+            // Vertikale Verbindung Kammer 1 → 3 (linke Begrenzung)
+            {
+                points: [
+                    [75, 270], [85, 270], [85, 320], [75, 320]
+                ],
+                filled: true
+            },
+            // Vertikale Verbindung Kammer 1 → 3 (rechte Begrenzung für 41px Korridor)
+            {
+                points: [
+                    [126, 270], [136, 270], [136, 320], [126, 320]
+                ],
+                filled: true
+            },
+
+            // Kammer 4: S-Tunnel Finale (unten rechts)
+            {
+                points: [
+                    [200, 440], [235, 435], [265, 450], [285, 480],
+                    [295, 515], [290, 545], [275, 570], [245, 580],
+                    [215, 575], [200, 550], [205, 515], [215, 485],
+                    [225, 460]
+                ],
+                filled: true
+            },
+
+            // Diagonale Verbindung Kammer 3 → 4 (organischer 40px Tunnel)
+            {
+                points: [
+                    [165, 420], [185, 410], [210, 415], [230, 430],
+                    [245, 450], [230, 470], [205, 465], [180, 450]
+                ],
+                filled: true
+            },
+            {
+                points: [
+                    [185, 450], [205, 440], [230, 445], [250, 460],
+                    [265, 480], [250, 500], [225, 495], [200, 480]
+                ],
+                filled: true
+            }
+        ],
+        platforms: [
+            { id: "ALPHA", position: [40, 75], width: 40, startingCargo: null },
+            { id: "BETA", position: [34, 312], width: 40, startingCargo: "THETA" },
+            { id: "GAMMA", position: [290, 75], width: 40, startingCargo: "IOTA" },
+            { id: "DELTA", position: [200, 200], width: 41, startingCargo: "ETA" },
+            { id: "EPSILON", position: [65, 600], width: 45, startingCargo: "GAMMA" },
+            { id: "ZETA", position: [190, 410], width: 43, startingCargo: "ALPHA" },
+            { id: "ETA", position: [86, 318], width: 40, startingCargo: null },
+            { id: "THETA", position: [180, 340], width: 40, startingCargo: "DELTA" },
+            { id: "IOTA", position: [160, 500], width: 41, startingCargo: null }
+        ],
+        startPlatform: "ALPHA"
     }
 ];

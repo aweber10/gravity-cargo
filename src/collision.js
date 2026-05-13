@@ -3,7 +3,7 @@
 
 import { gameState } from './game-state.js';
 import { getShip, setShipPosition, setShipVelocity, setShipAngle, setShipSettling } from './ship-physics.js';
-import { getCurrentLevel, getWalls, getPlatforms, initLevel } from './level-manager.js';
+import { getCurrentLevel, getWalls, getPlatforms, initLevel, getMaxLevelCount } from './level-manager.js';
 import { playSound } from './audio.js?v=11';
 import { PHYSICS } from './config.js?v=11';
 import { exitTrainingMode } from './game-flow.js';
@@ -194,7 +194,7 @@ function levelComplete() {
     }
     
     setTimeout(() => {
-        if (gameState.level <= 10) {
+        if (gameState.level <= getMaxLevelCount()) {
             // Initialize new level and set ship position
             const startPos = initLevel();
             const ship = getShip();
