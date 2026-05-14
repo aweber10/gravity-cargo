@@ -687,6 +687,16 @@ export const levelTemplates = [
                 filled: true
             },
 
+            // ZENTRAL-MITTE: "Erosions-Brocken Kopie" (leicht asymmetrisch für natürlichen Look)
+            {
+                points: [
+                    [178, 233], [218, 230], [245, 245], [263, 270], [258, 295],
+                    [238, 320], [208, 325], [183, 320], [163, 310], [143, 290],
+                    [143, 265], [148, 240], [163, 230], [178, 233]
+                ],
+                filled: true
+            },
+
             // RING-ASTEROIDEN (mittlere Größe für 50px Korridore)
             // Nord-Ost organischer Brocken
             {
@@ -739,11 +749,11 @@ export const levelTemplates = [
         platforms: [
             { id: "ALPHA", position: [35, 640], width: 70, startingCargo: null },
             { id: "BETA", position: [280, 600], width: 50, startingCargo: "GAMMA" },
-            { id: "GAMMA", position: [100, 430], width: 40, startingCargo: "DELTA" },
+            { id: "GAMMA", position: [80, 200], width: 40, startingCargo: "DELTA" },
             { id: "DELTA", position: [260, 180], width: 40, startingCargo: "EPSILON" },
             { id: "EPSILON", position: [90, 100], width: 40, startingCargo: "ZETA" },
             { id: "ZETA", position: [300, 440], width: 40, startingCargo: "ETA" },
-            { id: "ETA", position: [190, 490], width: 45, startingCargo: "ALPHA" }
+            { id: "ETA", position: [100, 490], width: 45, startingCargo: "ALPHA" }
         ],
         startPlatform: "ALPHA"
     }
