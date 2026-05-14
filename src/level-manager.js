@@ -11,25 +11,9 @@ import { isMobile } from "./device-detection.js";
 // Select appropriate level templates based on device
 const levelTemplates = isMobile ? mobileLevels : desktopLevels;
 
-// TODO: TESTPHASE - Nach Tests auf 'false' setzen um Level 11 nur durch normale Progression erreichbar zu machen
-const LEVEL_11_TEST_MODE = true;
-
 // Get maximum level count dynamically
 export function getMaxLevelCount() {
-    const baseCount = levelTemplates.length;
-    
-    // Console warning für aktiven Test-Modus
-    if (LEVEL_11_TEST_MODE && baseCount > 10 && isMobile) {
-        console.log('⚠️  LEVEL 11 TEST MODE AKTIV - Level 11 ist in Training verfügbar');
-    }
-    
-    // Während Testphase: Level 11 in Training verfügbar
-    // Nach Tests: Level 11 nur durch normale Progression erreichbar
-    if (!LEVEL_11_TEST_MODE && baseCount > 10 && isMobile) {
-        return 10; // Versteckt Level 11 aus Training-Menü (nur Mobile hat Level 11)
-    }
-    
-    return baseCount;
+    return levelTemplates.length;
 }
 
 // Current level data

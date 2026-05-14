@@ -631,6 +631,121 @@ export const levelTemplates = [
             { id: "IOTA", position: [160, 500], width: 41, startingCargo: null }
         ],
         startPlatform: "ALPHA"
+    },
+
+    // Level 12: "Asteroid Field" - AGGRESSIV SCHWIERIG
+    {
+        levelNumber: 12,
+        name: "Asteroid Field",
+        fuel: 210,
+        gravity: 0.05,
+        scrollDirection: null,
+        walls: [
+            // Rahmen
+            { points: [[0, 0], [375, 0], [375, 20], [0, 20]], filled: true },
+            { points: [[0, 0], [20, 0], [20, 667], [0, 667]], filled: true },
+            { points: [[355, 0], [375, 0], [375, 667], [355, 667]], filled: true },
+            { points: [[0, 647], [375, 647], [375, 667], [0, 667]], filled: true },
+
+            // ZENTRAL-NORD: "Gewachsener Kristall" (120px breit, asymmetrisch)
+            {
+                points: [
+                    [185, 120], [225, 125], [245, 145], [250, 170], [240, 195],
+                    [215, 210], [190, 215], [170, 205], [155, 185], [150, 160],
+                    [160, 135], [175, 125], [185, 120]
+                ],
+                filled: true
+            },
+
+            // ZENTRAL-SÜD: "Erosions-Brocken" (130px breit, gewellte Form)
+            {
+                points: [
+                    [180, 350], [220, 355], [250, 370], [265, 395], [260, 425],
+                    [240, 445], [210, 450], [185, 445], [160, 435], [145, 415],
+                    [140, 390], [150, 365], [165, 355], [180, 350]
+                ],
+                filled: true
+            },
+
+            // ZENTRAL-WEST: "Verschmolzener Block" (140px breit, Sattel-Einbuchtung)
+            {
+                points: [
+                    [40, 280], [75, 275], [95, 285], [105, 305], [100, 325],
+                    [90, 340], [75, 350], [55, 345], [35, 335], [25, 315],
+                    [20, 295], [30, 285], [40, 280]
+                ],
+                filled: true
+            },
+
+            // ZENTRAL-OST: "Geschwungener Monolith" (110px breit, S-Form)
+            {
+                points: [
+                    [295, 260], [330, 265], [350, 285], [355, 310], [345, 335],
+                    [325, 350], [300, 345], [285, 330], [280, 305], [285, 280],
+                    [295, 260]
+                ],
+                filled: true
+            },
+
+            // RING-ASTEROIDEN (mittlere Größe für 50px Korridore)
+            // Nord-Ost organischer Brocken
+            {
+                points: [
+                    [280, 100], [315, 105], [335, 125], [330, 150], [310, 165],
+                    [285, 160], [265, 145], [270, 120], [280, 100]
+                ],
+                filled: true
+            },
+
+            // Süd-West organischer Brocken  
+            {
+                points: [
+                    [70, 470], [105, 475], [125, 495], [120, 520], [100, 535],
+                    [75, 530], [55, 515], [50, 490], [60, 475], [70, 470]
+                ],
+                filled: true
+            },
+
+            // Süd-Ost organischer Brocken
+            {
+                points: [
+                    [290, 500], [325, 505], [345, 525], [340, 550], [320, 565],
+                    [295, 560], [275, 545], [280, 520], [290, 500]
+                ],
+                filled: true
+            },
+
+            // ÄUSSERE ASTEROIDEN (größere Formen, weniger einschränkend)
+            // Nord-West "Cathedral Spitze"
+            {
+                points: [
+                    [50, 80], [85, 85], [110, 105], [115, 135], [105, 160],
+                    [80, 175], [55, 170], [30, 155], [25, 125], [35, 95],
+                    [50, 80]
+                ],
+                filled: true
+            },
+
+            // Süd organischer Großblock
+            {
+                points: [
+                    [160, 560], [200, 565], [235, 585], [240, 615], [225, 635],
+                    [190, 640], [155, 635], [125, 620], [120, 590], [135, 570],
+                    [160, 560]
+                ],
+                filled: true
+            }
+        ],
+        platforms: [
+            { id: "ALPHA", position: [35, 640], width: 70, startingCargo: null },
+            { id: "BETA", position: [280, 600], width: 50, startingCargo: "GAMMA" },
+            { id: "GAMMA", position: [100, 430], width: 40, startingCargo: "DELTA" },
+            { id: "DELTA", position: [260, 180], width: 40, startingCargo: "EPSILON" },
+            { id: "EPSILON", position: [90, 100], width: 40, startingCargo: "ZETA" },
+            { id: "ZETA", position: [300, 440], width: 40, startingCargo: "ETA" },
+            { id: "ETA", position: [190, 490], width: 45, startingCargo: "ALPHA" }
+        ],
+        startPlatform: "ALPHA"
     }
 ];
 
