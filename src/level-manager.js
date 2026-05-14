@@ -3,8 +3,8 @@
 
 import { gameState } from './game-state.js';
 import { PHYSICS } from './config.js?v=12';
-import { levelTemplates as desktopLevels, calculateMaxScore } from './levels.js?v=12';
-import { levelTemplates as mobileLevels } from './levels-mobile.js?v=12';
+import { levelTemplates as desktopLevels, calculateMaxScore as calculateDesktopMaxScore } from './levels.js?v=12';
+import { levelTemplates as mobileLevels, calculateMaxScore as calculateMobileMaxScore } from './levels-mobile.js?v=12';
 import { playSound } from './audio.js?v=12';
 import { isMobile } from "./device-detection.js";
 
@@ -52,7 +52,7 @@ export function isCurrentLevelComplete() {
 }
 
 export function getMaxScore() {
-    return calculateMaxScore();
+    return isMobile ? calculateMobileMaxScore() : calculateDesktopMaxScore();
 }
 
 export function initLevel() {

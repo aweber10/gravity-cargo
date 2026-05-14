@@ -633,3 +633,10 @@ export const levelTemplates = [
         startPlatform: "ALPHA"
     }
 ];
+
+// Calculate maximum possible score for mobile levels
+export function calculateMaxScore() {
+    return levelTemplates.reduce((sum, level) => {
+        return sum + level.platforms.filter(platform => platform.startingCargo !== null).length;
+    }, 0);
+}
