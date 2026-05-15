@@ -758,9 +758,9 @@ export const levelTemplates = [
         startPlatform: "ALPHA"
     },
     
-    // Level 12: Fuel Precision - Mobile fuel efficiency challenge
+    // Level 13: Fuel Precision - Mobile fuel efficiency challenge
     {
-        levelNumber: 12,
+        levelNumber: 13,
         name: "Fuel Precision",
         fuel: 155,
         gravity: 0.05,
@@ -796,9 +796,9 @@ export const levelTemplates = [
         startPlatform: "ALPHA"
     },
     
-    // Level 13: Cosmic Maze - Mobile asteroid level with maximum complexity
+    // Level 14: Cosmic Maze - Mobile asteroid level with maximum complexity
     {
-        levelNumber: 13,
+        levelNumber: 14,
         name: "Cosmic Maze",
         fuel: 200,
         gravity: 0.05,
