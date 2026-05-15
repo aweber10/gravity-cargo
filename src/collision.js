@@ -7,6 +7,7 @@ import { getCurrentLevel, getWalls, getPlatforms, initLevel, getMaxLevelCount } 
 import { playSound } from './audio.js?v=11';
 import { PHYSICS } from './config.js?v=11';
 import { exitTrainingMode } from './game-flow.js';
+import { asteroidManager } from './asteroid-manager.js';
 
 // Create explosion effect
 export function createExplosion(x, y) {
@@ -38,6 +39,12 @@ export function checkCollisions() {
         }
     }
     
+    // Check asteroid collisions
+    if (checkAsteroidCollisions(ship)) {
+        explode();
+        return;
+    }
+    
     // Check platform collisions
     const platforms = getPlatforms();
     for (const platform of platforms) {
@@ -62,6 +69,24 @@ export function checkCollisions() {
             return;
         }
     }
+}
+
+// Check for ship-asteroid collisions using circle collision
+function checkAsteroidCollisions(ship) {
+    const activeAsteroids = asteroidManager.getActiveAsteroids();
+    
+    for (const asteroid of activeAsteroids) {
+        const dx = ship.x - asteroid.x;
+        const dy = ship.y - asteroid.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // Simple circle collision detection
+        if (distance < (ship.size + asteroid.size)) {
+            return true;
+        }
+    }
+    
+    return false;
 }
 
 // Check if a point is inside a polygon
@@ -151,6 +176,9 @@ export function respawn() {
     setShipVelocity(0, 0);
     setShipAngle(0);
     setShipSettling(false);
+    
+    // Reset asteroids for this level
+    asteroidManager.reset();
     
     gameState.fuel = gameState.maxFuel;
     gameState.currentCargo = null;

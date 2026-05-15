@@ -7,6 +7,7 @@ import { levelTemplates as desktopLevels, calculateMaxScore as calculateDesktopM
 import { levelTemplates as mobileLevels, calculateMaxScore as calculateMobileMaxScore } from './levels-mobile.js?v=12';
 import { playSound } from './audio.js?v=12';
 import { isMobile } from "./device-detection.js";
+import { asteroidManager } from './asteroid-manager.js';
 
 // Select appropriate level templates based on device
 const levelTemplates = isMobile ? mobileLevels : desktopLevels;
@@ -53,6 +54,9 @@ export function initLevel() {
     gameState.deliveredCargo = 0;
     gameState.lives = 3;
     gameState.levelStartScore = gameState.score;
+    
+    // Initialize asteroids for this level
+    asteroidManager.initLevel(currentLevel);
     
     const startPlatform = currentLevel.platforms.find(p => p.id === currentLevel.startPlatform);
     if (!startPlatform) {

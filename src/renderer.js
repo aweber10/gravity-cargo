@@ -3,12 +3,29 @@
 
 import { gameState, isShowLevelSelect } from './game-state.js';
 import { getShip, getTouchState } from './ship-physics.js';
-import { getWalls, getPlatforms, getMaxScore, getLevelTemplates } from './level-manager.js';
+import { getWalls, getPlatforms, getMaxScore, getLevelTemplates, getCurrentLevel } from './level-manager.js';
 import { isMobile, menu, pauseMenu, levelSelectMenu } from './ui.js';
+import { asteroidManager } from './asteroid-manager.js';
 
 // Canvas setup
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+
+// Generate static star field for space levels
+let spaceStars = [];
+
+function generateSpaceStars() {
+    spaceStars = [];
+    const starCount = isMobile ? 30 : 50;
+    
+    for (let i = 0; i < starCount; i++) {
+        spaceStars.push({
+            x: Math.random() * (isMobile ? 375 : 800),
+            y: Math.random() * (isMobile ? 667 : 600),
+            brightness: 0.3 + Math.random() * 0.7
+        });
+    }
+}
 
 // Resize canvas based on device
 export function resizeCanvas() {
@@ -33,6 +50,7 @@ export function resizeCanvas() {
 // Initialize canvas
 export function initCanvas() {
     resizeCanvas();
+    generateSpaceStars();
     window.addEventListener('resize', resizeCanvas);
 }
 
@@ -47,8 +65,16 @@ export function getContext() {
 
 // Render game elements
 export function render() {
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const currentLevel = getCurrentLevel();
+    const isSpaceLevel = currentLevel && currentLevel.backgroundType === 'space';
+    
+    // Render background (space or normal)
+    if (isSpaceLevel) {
+        renderSpaceBackground();
+    } else {
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
     
     if (gameState.state === 'menu') {
         renderMenu();
@@ -80,7 +106,7 @@ export function render() {
     // Render walls
     const walls = getWalls();
     for (const wall of walls) {
-        ctx.fillStyle = '#0ff';
+        ctx.fillStyle = isSpaceLevel ? '#333' : '#0ff';
         ctx.beginPath();
         ctx.moveTo(wall.points[0][0], wall.points[0][1]);
         for (let i = 1; i < wall.points.length; i++) {
@@ -88,6 +114,11 @@ export function render() {
         }
         ctx.closePath();
         ctx.fill();
+    }
+    
+    // Render asteroids (for space levels)
+    if (isSpaceLevel) {
+        renderAsteroids();
     }
     
     // Render platforms
@@ -528,6 +559,53 @@ function renderTouchIndicator() {
         ctx.lineTo(touchState.x, touchState.y);
         ctx.stroke();
         ctx.setLineDash([]);
+        ctx.restore();
+    }
+}
+
+// Render space background with stars
+function renderSpaceBackground() {
+    // Dark space background
+    ctx.fillStyle = '#000011';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Render static stars
+    ctx.fillStyle = '#ffffff';
+    for (const star of spaceStars) {
+        ctx.globalAlpha = star.brightness;
+        ctx.fillRect(star.x, star.y, 1, 1);
+    }
+    ctx.globalAlpha = 1.0;
+}
+
+// Render asteroids for space levels
+function renderAsteroids() {
+    const activeAsteroids = asteroidManager.getActiveAsteroids();
+    
+    if (activeAsteroids.length === 0) return;
+    
+    ctx.strokeStyle = '#888';
+    ctx.fillStyle = '#444';
+    ctx.lineWidth = 1;
+    
+    for (const asteroid of activeAsteroids) {
+        ctx.save();
+        ctx.translate(asteroid.x, asteroid.y);
+        
+        // Draw irregular asteroid polygon
+        ctx.beginPath();
+        for (let i = 0; i < asteroid.shape.length; i++) {
+            const point = asteroid.shape[i];
+            if (i === 0) {
+                ctx.moveTo(point.x, point.y);
+            } else {
+                ctx.lineTo(point.x, point.y);
+            }
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
         ctx.restore();
     }
 }

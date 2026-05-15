@@ -9,6 +9,7 @@ import { initCanvas, render } from './renderer.js';
 import { updateUI, setupKeyboardControls, setupTouchControls, setupClickControls, initMenu } from './ui.js';
 import { initGame } from './game-flow.js';
 import { PHYSICS } from './config.js?v=12';
+import { asteroidManager } from './asteroid-manager.js';
 
 // Game loop variables
 let lastTime = 0;
@@ -30,6 +31,10 @@ function update(dt) {
     if (gameState.state !== 'playing') return;
     
     updateTouchControls(dt);
+    
+    // Update asteroids
+    asteroidManager.update(dt * 1000); // Convert to milliseconds
+    
     updateShipSettling(dt);
     updateShipRotation(dt);
     updateShipThrust(dt);

@@ -414,6 +414,96 @@ export const levelTemplates = [
             { id: "THETA", position: [300, 70], width: 60, startingCargo: null }
         ],
         startPlatform: "ALPHA"
+    },
+    {
+        levelNumber: 11,
+        name: "Asteroid Gauntlet",
+        fuel: 250,
+        gravity: 0.05,
+        scrollDirection: null,
+        backgroundType: "space",
+        walls: [
+            // Only level boundaries for space level
+            { points: [[0, 0], [800, 0], [800, 20], [0, 20]], filled: true },
+            { points: [[0, 0], [20, 0], [20, 600], [0, 600]], filled: true },
+            { points: [[780, 0], [800, 0], [800, 600], [780, 600]], filled: true },
+            { points: [[0, 580], [800, 580], [800, 600], [0, 600]], filled: true }
+        ],
+        platforms: [
+            // 8 strategically positioned floating platforms
+            // Zone 1: Lower left area
+            { id: "ALPHA", position: [80, 480], width: 85, startingCargo: null },
+            { id: "BETA", position: [120, 350], width: 75, startingCargo: "EPSILON" },
+            
+            // Zone 2: Upper area  
+            { id: "GAMMA", position: [350, 120], width: 80, startingCargo: "ZETA" },
+            { id: "DELTA", position: [580, 150], width: 75, startingCargo: "ETA" },
+            
+            // Zone 3: Right side
+            { id: "EPSILON", position: [650, 320], width: 85, startingCargo: "THETA" },
+            { id: "ZETA", position: [620, 480], width: 90, startingCargo: null },
+            
+            // Zone 4: Central and hidden areas
+            { id: "ETA", position: [350, 520], width: 100, startingCargo: null },
+            { id: "THETA", position: [50, 180], width: 70, startingCargo: "ALPHA" }
+        ],
+        startPlatform: "ALPHA",
+        maxActiveAsteroids: 2,
+        asteroidPattern: [
+            // Cycle 1: Single asteroid warm-up
+            { spawn: [-40, 300], velocity: [80, 0], size: 30, delay: 3000 },
+            
+            // Cycle 2: Diagonal from top-right
+            { spawn: [840, 150], velocity: [-90, 25], size: 35, delay: 6000 },
+            
+            // Cycle 3: Two asteroids - staggered timing
+            { spawn: [-40, 450], velocity: [100, -15], size: 25, delay: 10000 },
+            { spawn: [840, 250], velocity: [-70, 10], size: 40, delay: 10800 },
+            
+            // Cycle 4: Fast single from bottom  
+            { spawn: [-40, 500], velocity: [120, -30], size: 32, delay: 14000 },
+            
+            // Cycle 5: Complex crossing pattern
+            { spawn: [840, 400], velocity: [-85, -20], size: 38, delay: 17000 },
+            { spawn: [-40, 200], velocity: [95, 20], size: 28, delay: 17500 },
+            
+            // End of cycle - restart with 3 second delay
+            { spawn: [0, 0], velocity: [0, 0], size: 0, delay: 21000, cycleDelay: 3000 }
+        ]
+    },
+    {
+        levelNumber: 12,
+        name: "Fuel Precision",
+        fuel: 185,
+        gravity: 0.05,
+        scrollDirection: null,
+        backgroundType: "space",
+        walls: [
+            // Only level boundaries for open space fuel challenge
+            { points: [[0, 0], [800, 0], [800, 20], [0, 20]], filled: true },
+            { points: [[0, 0], [20, 0], [20, 600], [0, 600]], filled: true },
+            { points: [[780, 0], [800, 0], [800, 600], [780, 600]], filled: true },
+            { points: [[0, 580], [800, 580], [800, 600], [0, 600]], filled: true }
+        ],
+        platforms: [
+            // 10 platforms strategically positioned for fuel efficiency challenge
+            // Zone 1: Lower area (starting region)
+            { id: "ALPHA", position: [80, 520], width: 85, startingCargo: null },
+            { id: "BETA", position: [200, 540], width: 80, startingCargo: "DELTA" },
+            { id: "GAMMA", position: [350, 510], width: 75, startingCargo: "THETA" },
+            { id: "DELTA", position: [500, 530], width: 85, startingCargo: "IOTA" },
+            { id: "EPSILON", position: [650, 510], width: 90, startingCargo: "ZETA" },
+            
+            // Zone 2: Middle elevation (strategic hub)
+            { id: "ZETA", position: [150, 350], width: 80, startingCargo: "KAPPA" },
+            { id: "ETA", position: [350, 330], width: 90, startingCargo: "EPSILON" },
+            { id: "THETA", position: [550, 340], width: 85, startingCargo: "ALPHA" },
+            
+            // Zone 3: Upper area (final destinations)
+            { id: "IOTA", position: [200, 150], width: 75, startingCargo: null },
+            { id: "KAPPA", position: [500, 180], width: 80, startingCargo: null }
+        ],
+        startPlatform: "ALPHA"
     }
 ];
 

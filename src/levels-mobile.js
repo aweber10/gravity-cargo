@@ -756,6 +756,103 @@ export const levelTemplates = [
             { id: "ETA", position: [100, 490], width: 45, startingCargo: "ALPHA" }
         ],
         startPlatform: "ALPHA"
+    },
+    
+    // Level 12: Fuel Precision - Mobile fuel efficiency challenge
+    {
+        levelNumber: 12,
+        name: "Fuel Precision",
+        fuel: 155,
+        gravity: 0.05,
+        scrollDirection: null,
+        backgroundType: "space",
+        walls: [
+            // Only level boundaries for open space fuel challenge
+            { points: [[0, 0], [375, 0], [375, 20], [0, 20]], filled: true },
+            { points: [[0, 0], [20, 0], [20, 667], [0, 667]], filled: true },
+            { points: [[355, 0], [375, 0], [375, 667], [355, 667]], filled: true },
+            { points: [[0, 647], [375, 647], [375, 667], [0, 667]], filled: true }
+        ],
+        platforms: [
+            // 10 platforms optimized for mobile touch controls - wider platforms, strategic spacing
+            // Zone 1: Lower area (starting region)
+            { id: "ALPHA", position: [50, 600], width: 100, startingCargo: null },
+            { id: "BETA", position: [180, 580], width: 90, startingCargo: "DELTA" },
+            { id: "GAMMA", position: [260, 550], width: 95, startingCargo: "THETA" },
+            
+            // Zone 2: Mid-lower area
+            { id: "DELTA", position: [40, 450], width: 85, startingCargo: "IOTA" },
+            { id: "EPSILON", position: [200, 470], width: 110, startingCargo: "KAPPA" },
+            { id: "ZETA", position: [280, 420], width: 80, startingCargo: null },
+            
+            // Zone 3: Mid-upper area  
+            { id: "ETA", position: [80, 300], width: 90, startingCargo: "ALPHA" },
+            { id: "THETA", position: [220, 280], width: 100, startingCargo: "ZETA" },
+            
+            // Zone 4: Upper area (final destinations)
+            { id: "IOTA", position: [60, 150], width: 95, startingCargo: null },
+            { id: "KAPPA", position: [250, 120], width: 85, startingCargo: null }
+        ],
+        startPlatform: "ALPHA"
+    },
+    
+    // Level 13: Cosmic Maze - Mobile asteroid level with maximum complexity
+    {
+        levelNumber: 13,
+        name: "Cosmic Maze",
+        fuel: 200,
+        gravity: 0.05,
+        scrollDirection: null,
+        backgroundType: "space",
+        walls: [
+            // Only level boundaries for mobile space level
+            { points: [[0, 0], [375, 0], [375, 20], [0, 20]], filled: true },
+            { points: [[0, 0], [20, 0], [20, 667], [0, 667]], filled: true },
+            { points: [[355, 0], [375, 0], [375, 667], [355, 667]], filled: true },
+            { points: [[0, 647], [375, 647], [375, 667], [0, 667]], filled: true }
+        ],
+        platforms: [
+            // 8 floating platforms optimized for mobile touch controls
+            // Zone 1: Bottom area (easier access)
+            { id: "ALPHA", position: [50, 580], width: 100, startingCargo: null },
+            { id: "BETA", position: [220, 520], width: 110, startingCargo: "EPSILON" },
+            
+            // Zone 2: Mid-level platforms
+            { id: "GAMMA", position: [40, 420], width: 90, startingCargo: "ZETA" },
+            { id: "DELTA", position: [240, 380], width: 100, startingCargo: "ETA" },
+            
+            // Zone 3: Upper mid-level
+            { id: "EPSILON", position: [80, 260], width: 95, startingCargo: "THETA" },
+            { id: "ZETA", position: [200, 200], width: 120, startingCargo: null },
+            
+            // Zone 4: Upper area (challenging)
+            { id: "ETA", position: [60, 120], width: 110, startingCargo: null },
+            { id: "THETA", position: [250, 80], width: 85, startingCargo: "ALPHA" }
+        ],
+        startPlatform: "ALPHA",
+        maxActiveAsteroids: 2,
+        asteroidPattern: [
+            // Mobile-optimized pattern - slower but still challenging
+            // Cycle 1: Gentle start
+            { spawn: [-30, 400], velocity: [65, 0], size: 30, delay: 4000 },
+            
+            // Cycle 2: Diagonal 
+            { spawn: [405, 200], velocity: [-70, 15], size: 35, delay: 7500 },
+            
+            // Cycle 3: Two asteroids with mobile-friendly timing
+            { spawn: [-30, 300], velocity: [80, -10], size: 28, delay: 12000 },
+            { spawn: [405, 450], velocity: [-60, 20], size: 38, delay: 13000 },
+            
+            // Cycle 4: Vertical movement
+            { spawn: [-30, 150], velocity: [90, 25], size: 32, delay: 17000 },
+            
+            // Cycle 5: Complex but manageable for touch
+            { spawn: [405, 350], velocity: [-75, -15], size: 35, delay: 20500 },
+            { spawn: [-30, 500], velocity: [85, -20], size: 30, delay: 21200 },
+            
+            // End of cycle - restart with 4 second mobile-friendly delay
+            { spawn: [0, 0], velocity: [0, 0], size: 0, delay: 25000, cycleDelay: 4000 }
+        ]
     }
 ];
 
