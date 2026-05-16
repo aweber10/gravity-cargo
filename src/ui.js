@@ -6,7 +6,14 @@ import { getShip, setKeyState, setTouchState, getTouchState } from './ship-physi
 import { togglePause, handleMenuSelection, handlePauseMenuSelection, handleTrainingLevelSelect, exitTrainingMode } from './game-flow.js';
 import { getMaxLevelCount } from './level-manager.js';
 import { isMobile } from "./device-detection.js";
+import { getDisplayTime, isCountdownMode, isOvertime, formatTime } from './time-attack.js';
 export { isMobile };
+
+// Timer optimization: Cache DOM elements and track changes to reduce updates
+let timerElementCache = null;
+let lastTimerText = '';
+let lastTimerClass = '';
+let lastTimerVisibility = null;
 
 // Menu state
 export const menu = {
@@ -14,6 +21,7 @@ export const menu = {
     selectedOption: 0,
     options: [
         { id: 'newgame', label: 'NEUES SPIEL', enabled: true, bounds: null },
+        { id: 'timeattack', label: 'ZEITRENNEN', enabled: true, bounds: null },
         { id: 'training', label: 'TRAINING', enabled: true, bounds: null },
         { id: 'continue', label: 'FORTSETZEN', enabled: false, bounds: null }
     ]
@@ -41,6 +49,46 @@ export function updateUI() {
     const scoreElement = document.getElementById('score');
     if (scoreElement) {
         scoreElement.textContent = `SCORE: ${gameState.score.toString().padStart(2, '0')}`;
+    }
+    
+    // Update timer for time attack mode (optimized with change detection)
+    if (!timerElementCache) {
+        timerElementCache = document.getElementById('timer');
+    }
+    
+    if (timerElementCache) {
+        const shouldShow = (gameState.mode === 'timeattack' && gameState.state === 'playing');
+        
+        if (shouldShow) {
+            const displayTime = getDisplayTime();
+            const timeText = formatTime(displayTime);
+            
+            // Build current text and class
+            const currentText = isOvertime() 
+                ? `ZEIT: +${timeText}` 
+                : `ZEIT: ${timeText}`;
+                
+            const currentClass = isOvertime() ? 'overtime' 
+                : isCountdownMode() ? 'countdown' 
+                : 'stopwatch';
+            
+            // Only update DOM when values actually change
+            if (currentText !== lastTimerText) {
+                timerElementCache.textContent = currentText;
+                lastTimerText = currentText;
+            }
+            
+            if (currentClass !== lastTimerClass) {
+                timerElementCache.className = currentClass;
+                lastTimerClass = currentClass;
+            }
+        }
+        
+        // Only update visibility when it changes
+        if (shouldShow !== lastTimerVisibility) {
+            timerElementCache.style.display = shouldShow ? 'block' : 'none';
+            lastTimerVisibility = shouldShow;
+        }
     }
     
     // Update lives
@@ -76,8 +124,18 @@ export function updateUI() {
     }
 }
 
+// Reset timer cache when switching modes to prevent stale values
+export function resetTimerCache() {
+    lastTimerText = '';
+    lastTimerClass = '';
+    lastTimerVisibility = null;
+}
+
 // Initialize menu
 export function initMenu() {
+    // Reset timer cache when returning to menu
+    resetTimerCache();
+    
     // Check for saved game state
     try {
         const data = localStorage.getItem('gravityCargo_saveData');

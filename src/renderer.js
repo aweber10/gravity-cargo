@@ -6,6 +6,7 @@ import { getShip, getTouchState } from './ship-physics.js';
 import { getWalls, getPlatforms, getMaxScore, getLevelTemplates, getCurrentLevel } from './level-manager.js';
 import { isMobile, menu, pauseMenu, levelSelectMenu } from './ui.js';
 import { asteroidManager } from './asteroid-manager.js';
+import { getDisplayTime, isCountdownMode, isOvertime, formatTime, getLastResult, getCompactOverviewData } from './time-attack.js';
 
 // Canvas setup
 const canvas = document.getElementById('gameCanvas');
@@ -463,22 +464,68 @@ function renderLevelComplete() {
     ctx.fillText(`LEVEL ${completedLevel} / ${completeTotalLevels}`, canvas.width / 2, canvas.height * 0.45 + 30);
     ctx.fillStyle = '#fff';
 
-    ctx.font = '24px "Courier New"';
-    ctx.fillText(`SCORE: ${gameState.score}`, canvas.width / 2, canvas.height * 0.45 + 80);
+    let yOffset = 80;
+    
+    // Render time attack specific info
+    if (gameState.mode === 'timeattack') {
+        const result = getLastResult();
+        
+        // Current time
+        ctx.font = '24px "Courier New"';
+        ctx.fillStyle = '#fff';
+        ctx.fillText(`DEINE ZEIT: ${formatTime(result.levelTime)}`, canvas.width / 2, canvas.height * 0.45 + yOffset);
+        yOffset += 35;
+        
+        // Personal best (if exists and different)
+        if (result.personalBest && !result.isNewRecord) {
+            ctx.font = '18px "Courier New"';
+            ctx.fillStyle = '#888';
+            ctx.fillText(`BESTZEIT: ${formatTime(result.personalBest)}`, canvas.width / 2, canvas.height * 0.45 + yOffset);
+            yOffset += 25;
+        }
+        
+        // Performance message (nur wenn vorhanden)
+        if (result.message) {
+            ctx.font = '20px "Courier New"';
+            if (result.isNewRecord) {
+                ctx.fillStyle = '#0f0'; // Green for new record
+            } else if (result.message === "Nicht übel gar nicht übel") {
+                ctx.fillStyle = '#ff0'; // Yellow for close time
+            } else {
+                ctx.fillStyle = '#f80'; // Orange for slower time
+            }
+            ctx.fillText(result.message, canvas.width / 2, canvas.height * 0.45 + yOffset);
+            yOffset += 40;
+        }
+    } else {
+        // Normal mode: show score
+        ctx.font = '24px "Courier New"';
+        ctx.fillText(`SCORE: ${gameState.score}`, canvas.width / 2, canvas.height * 0.45 + yOffset);
+        yOffset += 40;
+    }
 }
 
 // Render game over screen
 function renderGameOver() {
     ctx.fillStyle = '#fff';
-    ctx.font = '48px "Courier New"';
+    ctx.font = isMobile ? '36px' : '48px';
     ctx.textAlign = 'center';
-    ctx.fillText('GAME OVER', canvas.width / 2, canvas.height * 0.4);
-    ctx.font = '24px "Courier New"';
-    ctx.fillText(`LEVEL: ${gameState.level}`, canvas.width / 2, canvas.height * 0.4 + 35);
-    ctx.fillText(`SCORE: ${gameState.score}`, canvas.width / 2, canvas.height * 0.4 + 70);
-    ctx.font = '20px "Courier New"';
+    ctx.fillText('GAME OVER', canvas.width / 2, canvas.height * 0.3);
+    
+    ctx.font = isMobile ? '18px' : '24px';
+    ctx.fillText(`LEVEL: ${gameState.level}`, canvas.width / 2, canvas.height * 0.3 + (isMobile ? 50 : 60));
+    
+    if (gameState.mode === 'timeattack') {
+        // Show time attack overview for reached levels
+        renderTimeAttackOverview('partial', canvas.height * 0.3 + (isMobile ? 90 : 110));
+    } else {
+        // Normal mode: show score
+        ctx.fillText(`SCORE: ${gameState.score}`, canvas.width / 2, canvas.height * 0.3 + (isMobile ? 80 : 100));
+    }
+    
+    ctx.font = isMobile ? '16px' : '20px';
     ctx.fillStyle = '#0ff';
-    ctx.fillText('ENTER für Hauptmenü', canvas.width / 2, canvas.height * 0.4 + 120);
+    ctx.fillText('ENTER für Hauptmenü', canvas.width / 2, canvas.height - (isMobile ? 40 : 60));
 }
 
 // Render game won screen
@@ -498,27 +545,32 @@ function renderGameWon() {
     ctx.fillText('ALLE LEVEL', canvas.width / 2, canvas.height / 6 + 50);
     ctx.fillText('ABGESCHLOSSEN', canvas.width / 2, canvas.height / 6 + 72);
     
-    // Score - MOBILE OPTIMIERT
-    const maxScore = getMaxScore();
-    const percentage = Math.round((gameState.score / maxScore) * 100);
-    const scoreY = canvas.height / 2 - 50;
-    
-    ctx.font = '28px "Courier New"';
-    ctx.fillStyle = '#fff';
-    ctx.fillText(`DEIN SCORE: ${gameState.score}`, canvas.width / 2, scoreY);
-    
-    ctx.font = '16px "Courier New"';
-    ctx.fillStyle = '#888';
-    ctx.fillText(`Maximal möglich: ${maxScore}`, canvas.width / 2, scoreY + 35);
-    
-    ctx.font = '22px "Courier New"';
-    ctx.fillStyle = percentage === 100 ? '#0f0' : '#ff0';
-    ctx.fillText(`${percentage}% erreicht`, canvas.width / 2, scoreY + 65);
-    
-    if (percentage === 100) {
-        ctx.font = '18px "Courier New"';
-        ctx.fillStyle = '#0f0';
-        ctx.fillText('★ PERFEKT ★', canvas.width / 2, scoreY + 95);
+    if (gameState.mode === 'timeattack') {
+        // Show time attack overview for all levels
+        renderTimeAttackOverview('complete', canvas.height / 6 + 110);
+    } else {
+        // Score - MOBILE OPTIMIERT
+        const maxScore = getMaxScore();
+        const percentage = Math.round((gameState.score / maxScore) * 100);
+        const scoreY = canvas.height / 2 - 50;
+        
+        ctx.font = '28px "Courier New"';
+        ctx.fillStyle = '#fff';
+        ctx.fillText(`DEIN SCORE: ${gameState.score}`, canvas.width / 2, scoreY);
+        
+        ctx.font = '16px "Courier New"';
+        ctx.fillStyle = '#888';
+        ctx.fillText(`Maximal möglich: ${maxScore}`, canvas.width / 2, scoreY + 35);
+        
+        ctx.font = '22px "Courier New"';
+        ctx.fillStyle = percentage === 100 ? '#0f0' : '#ff0';
+        ctx.fillText(`${percentage}% erreicht`, canvas.width / 2, scoreY + 65);
+        
+        if (percentage === 100) {
+            ctx.font = '18px "Courier New"';
+            ctx.fillStyle = '#0f0';
+            ctx.fillText('★ PERFEKT ★', canvas.width / 2, scoreY + 95);
+        }
     }
     
     // Credits - MOBILE OPTIMIERT
@@ -562,6 +614,8 @@ function renderTouchIndicator() {
         ctx.restore();
     }
 }
+
+
 
 // Render space background with stars
 function renderSpaceBackground() {
@@ -608,4 +662,91 @@ function renderAsteroids() {
         
         ctx.restore();
     }
+}
+
+// Render time attack overview for end screens
+function renderTimeAttackOverview(mode, startY) {
+    const maxLevel = mode === 'partial' ? gameState.level - 1 : null;
+    const overviewData = getCompactOverviewData(maxLevel);
+    
+    if (overviewData.levels.length === 0) {
+        // Show fallback message for no data
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.font = isMobile ? '14px' : '16px';
+        ctx.fillStyle = '#888';
+        ctx.fillText('Keine Zeitdaten verfügbar', canvas.width / 2, startY + 40);
+        ctx.restore();
+        return;
+    }
+    
+    ctx.save();
+    ctx.textAlign = 'center';
+    
+    // Title
+    ctx.font = isMobile ? '14px' : '16px';
+    ctx.fillStyle = '#0ff';
+    const title = mode === 'partial' ? 'ERREICHTE ZEITEN' : 'ZEITÜBERSICHT';
+    ctx.fillText(title, canvas.width / 2, startY);
+    
+    // Calculate responsive grid layout
+    const levelsPerRow = isMobile ? 2 : Math.min(4, overviewData.levels.length);
+    const rows = Math.ceil(overviewData.levels.length / levelsPerRow);
+    const rowHeight = isMobile ? 18 : 20;
+    const gridStartY = startY + 25;
+    
+    // Adjust for very small mobile screens
+    const isVerySmallScreen = isMobile && canvas.height < 600;
+    const adjustedRowHeight = isVerySmallScreen ? 16 : rowHeight;
+    const adjustedFontSize = isVerySmallScreen ? '12px' : (isMobile ? '13px' : '15px');
+    
+    // Draw semi-transparent background box
+    const boxPadding = 15;
+    const boxHeight = rows * adjustedRowHeight + 50; // Extra space for summary
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.fillRect(
+        canvas.width * 0.05, 
+        gridStartY - 10, 
+        canvas.width * 0.9, 
+        boxHeight
+    );
+    
+    // Render level times in grid
+    ctx.font = adjustedFontSize;
+    ctx.textAlign = 'left';
+    
+    for (let i = 0; i < overviewData.levels.length; i++) {
+        const level = overviewData.levels[i];
+        const row = Math.floor(i / levelsPerRow);
+        const col = i % levelsPerRow;
+        
+        // Calculate position with better spacing
+        const gridWidth = canvas.width * 0.8;
+        const cellWidth = gridWidth / levelsPerRow;
+        const x = (canvas.width - gridWidth) / 2 + col * cellWidth;
+        const y = gridStartY + row * adjustedRowHeight;
+        
+        // Render level entry
+        const levelText = `L${level.number}: ${level.formatted}`;
+        const recordMarker = level.isSessionRecord ? '*' : '';
+        
+        ctx.fillStyle = level.isSessionRecord ? '#0f0' : '#fff';
+        ctx.fillText(levelText + recordMarker, x, y);
+    }
+    
+    // Summary line
+    const summaryY = gridStartY + rows * adjustedRowHeight + 20;
+    ctx.textAlign = 'center';
+    ctx.font = adjustedFontSize;
+    
+    let summaryText = `${overviewData.summary.totalLevels} Level`;
+    if (overviewData.summary.sessionRecords > 0) {
+        summaryText += ` | ${overviewData.summary.sessionRecords} Rekorde *`;
+    }
+    summaryText += ` | ${overviewData.summary.formattedTotal}`;
+    
+    ctx.fillStyle = '#ff0';
+    ctx.fillText(summaryText, canvas.width / 2, summaryY);
+    
+    ctx.restore();
 }

@@ -10,6 +10,7 @@ import { updateUI, setupKeyboardControls, setupTouchControls, setupClickControls
 import { initGame } from './game-flow.js';
 import { PHYSICS } from './config.js?v=12';
 import { asteroidManager } from './asteroid-manager.js';
+import { updateTimer } from './time-attack.js';
 
 // Game loop variables
 let lastTime = 0;
@@ -34,6 +35,11 @@ function update(dt) {
     
     // Update asteroids
     asteroidManager.update(dt * 1000); // Convert to milliseconds
+    
+    // Update time attack timer
+    if (gameState.mode === 'timeattack') {
+        updateTimer();
+    }
     
     updateShipSettling(dt);
     updateShipRotation(dt);

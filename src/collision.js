@@ -8,6 +8,7 @@ import { playSound } from './audio.js?v=11';
 import { PHYSICS } from './config.js?v=11';
 import { exitTrainingMode } from './game-flow.js';
 import { asteroidManager } from './asteroid-manager.js';
+import { stopLevelTimer, evaluateTime, startLevelTimer } from './time-attack.js';
 
 // Create explosion effect
 export function createExplosion(x, y) {
@@ -195,6 +196,14 @@ function isCurrentLevelComplete() {
 
 // Handle level completion
 function levelComplete() {
+    // Handle time attack timer
+    if (gameState.mode === 'timeattack') {
+        const levelTime = stopLevelTimer();
+        if (levelTime !== null) {
+            evaluateTime(levelTime, gameState.level);
+        }
+    }
+    
     if (gameState.trainingMode) {
         // In training mode: direct return to main menu
         setTimeout(() => {
@@ -231,6 +240,11 @@ function levelComplete() {
             setShipAngle(startPos.angle);
             setShipSettling(false);
             
+            // Start timer for next level in time attack mode
+            if (gameState.mode === 'timeattack') {
+                startLevelTimer(gameState.level);
+            }
+            
             gameState.state = 'playing';
         } else {
             gameState.state = 'gamewon';
@@ -240,5 +254,5 @@ function levelComplete() {
                 console.error('Clear save failed:', e);
             }
         }
-    }, 2000);
+    }, 3000);
 }

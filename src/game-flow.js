@@ -1,18 +1,25 @@
 // src/game-flow.js
 // Handles game state transitions, menu systems, and high-level game flow
 
-import { gameState } from './game-state.js';
-import { menu, pauseMenu, initMenu as uiInitMenu, setupKeyboardControls, setupTouchControls, setupClickControls } from './ui.js';
+import { gameState, setGameMode } from './game-state.js';
+import { menu, pauseMenu, initMenu as uiInitMenu, setupKeyboardControls, setupTouchControls, setupClickControls, resetTimerCache } from './ui.js';
 import { initCanvas } from './renderer.js';
 import { initLevel } from './level-manager.js';
 import { setShipPosition, setShipVelocity, setShipAngle, setShipSettling } from './ship-physics.js';
+import { activateTimeAttack, deactivateTimeAttack, startLevelTimer, resetCurrentRun, pauseTimer, resumeTimer } from './time-attack.js';
 
 // Toggle pause state
 export function togglePause() {
     if (gameState.state === 'playing') {
         gameState.state = 'paused';
+        if (gameState.mode === 'timeattack') {
+            pauseTimer();
+        }
     } else if (gameState.state === 'paused') {
         gameState.state = 'playing';
+        if (gameState.mode === 'timeattack') {
+            resumeTimer();
+        }
     }
 }
 
@@ -23,6 +30,9 @@ export function handlePauseMenuSelection() {
     switch (selectedOption.id) {
         case 'resume':
             gameState.state = 'playing';
+            if (gameState.mode === 'timeattack') {
+                resumeTimer();
+            }
             break;
         case 'restart':
             restartLevel();
@@ -48,6 +58,11 @@ export function restartLevel() {
     setShipAngle(startPos.angle);
     setShipSettling(false);
     
+    // Restart timer for time attack mode
+    if (gameState.mode === 'timeattack') {
+        startLevelTimer(gameState.level);
+    }
+    
     gameState.state = 'playing';
 }
 
@@ -61,6 +76,9 @@ export function handleMenuSelection() {
         case 'newgame':
             startNewGame();
             break;
+        case 'timeattack':
+            startTimeAttack();
+            break;
         case 'training':
             startTrainingMode();
             break;
@@ -72,6 +90,10 @@ export function handleMenuSelection() {
 
 // Start a new game
 export function startNewGame() {
+    setGameMode('normal');
+    deactivateTimeAttack();
+    resetTimerCache(); // Reset timer cache when switching to normal mode
+    
     gameState.level = 1;
     gameState.score = 0;
     gameState.lives = 3;
@@ -92,12 +114,40 @@ export function startNewGame() {
     gameState.state = 'playing';
 }
 
+// Start time attack mode
+export function startTimeAttack() {
+    setGameMode('timeattack');
+    activateTimeAttack();
+    resetTimerCache(); // Reset timer cache when switching to time attack mode
+    
+    gameState.level = 1;
+    gameState.score = 0;
+    gameState.lives = 3;
+    gameState.lastCompletedLevel = 0;
+    
+    // Initialize level and set ship position
+    const startPos = initLevel();
+    setShipPosition(startPos.x, startPos.y);
+    setShipVelocity(0, 0);
+    setShipAngle(startPos.angle);
+    setShipSettling(false);
+    
+    // Start timer for first level
+    startLevelTimer(gameState.level);
+    
+    gameState.state = 'playing';
+}
+
 // Continue saved game
 export function continueGame() {
     try {
         const data = localStorage.getItem('gravityCargo_saveData');
         const saveData = data ? JSON.parse(data) : null;
         if (saveData) {
+            setGameMode('normal');
+            deactivateTimeAttack();
+            resetTimerCache(); // Reset timer cache when continuing normal game
+            
             gameState.level = saveData.level;
             gameState.score = saveData.score;
             gameState.lastCompletedLevel = typeof saveData.lastCompletedLevel === 'number'
@@ -151,6 +201,10 @@ export function initGame() {
 
 // Training mode functions
 export function startTrainingMode() {
+    setGameMode('training');
+    deactivateTimeAttack();
+    resetTimerCache(); // Reset timer cache when switching to training mode
+    
     gameState.state = 'levelselect';
     gameState.trainingMode = true;
     gameState.showLevelSelect = true;

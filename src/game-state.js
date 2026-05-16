@@ -4,6 +4,7 @@
 // Game State
 export const gameState = {
     state: 'menu', // menu, playing, paused, levelcomplete, gameover, gamewon, levelselect
+    mode: 'normal', // normal, timeattack, training
     score: 0,
     lives: 3,
     level: 1,
@@ -33,6 +34,7 @@ export function getGameState() {
 
 export function resetGameState() {
     gameState.state = 'menu';
+    gameState.mode = 'normal';
     gameState.score = 0;
     gameState.lives = 3;
     gameState.level = 1;
@@ -128,4 +130,17 @@ export function setShowLevelSelect(show) {
 
 export function isShowLevelSelect() {
     return gameState.showLevelSelect;
+}
+
+// Game mode functions
+export function setGameMode(mode) {
+    gameState.mode = mode;
+}
+
+export function getGameMode() {
+    return gameState.mode;
+}
+
+export function isTimeAttackMode() {
+    return gameState.mode === 'timeattack';
 }
