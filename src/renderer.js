@@ -6,11 +6,120 @@ import { getShip, getTouchState } from './ship-physics.js';
 import { getWalls, getPlatforms, getMaxScore, getLevelTemplates, getCurrentLevel } from './level-manager.js';
 import { isMobile, menu, pauseMenu, levelSelectMenu } from './ui.js';
 import { asteroidManager } from './asteroid-manager.js';
-import { getDisplayTime, isCountdownMode, isOvertime, formatTime, getLastResult, getCompactOverviewData } from './time-attack.js';
+import { getDisplayTime, isCountdownMode, isOvertime, formatTime, formatCompactTime, getLastResult, getCompactOverviewData } from './time-attack.js';
 
 // Canvas setup
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+
+// Fireworks system for GameWon screen
+let fireworksState = {
+    active: false,
+    startTime: 0,
+    particles: [],
+    explosions: []
+};
+
+class Particle {
+    constructor(x, y, vx, vy, color, life) {
+        this.x = x;
+        this.y = y;
+        this.vx = vx;
+        this.vy = vy;
+        this.color = color;
+        this.life = life;
+        this.maxLife = life;
+        this.gravity = 0.2;
+    }
+    
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += this.gravity;
+        this.life--;
+        this.vx *= 0.99; // air resistance
+    }
+    
+    render() {
+        const alpha = this.life / this.maxLife;
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x - 1, this.y - 1, 2, 2);
+        ctx.restore();
+    }
+    
+    isDead() {
+        return this.life <= 0;
+    }
+}
+
+function startFireworks() {
+    fireworksState.active = true;
+    fireworksState.startTime = Date.now();
+    fireworksState.particles = [];
+    fireworksState.explosions = [
+        { time: 0, x: canvas.width * 0.3, y: canvas.height * 0.4 },
+        { time: 500, x: canvas.width * 0.7, y: canvas.height * 0.3 },
+        { time: 1000, x: canvas.width * 0.5, y: canvas.height * 0.35 },
+        { time: 1500, x: canvas.width * 0.2, y: canvas.height * 0.45 },
+        { time: 2000, x: canvas.width * 0.8, y: canvas.height * 0.4 }
+    ];
+}
+
+function createExplosion(x, y) {
+    const colors = ['#ff0000', '#ff8800', '#ffff00', '#00ff00', '#0088ff', '#8800ff', '#ff00ff'];
+    const particleCount = isMobile ? 15 : 25;
+    
+    for (let i = 0; i < particleCount; i++) {
+        const angle = (Math.PI * 2 * i) / particleCount + Math.random() * 0.5;
+        const speed = 2 + Math.random() * 4;
+        const vx = Math.cos(angle) * speed;
+        const vy = Math.sin(angle) * speed;
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const life = 60 + Math.random() * 40;
+        
+        fireworksState.particles.push(new Particle(x, y, vx, vy, color, life));
+    }
+}
+
+function updateFireworks() {
+    if (!fireworksState.active) return;
+    
+    const elapsed = Date.now() - fireworksState.startTime;
+    
+    // Check for new explosions
+    fireworksState.explosions.forEach(explosion => {
+        if (!explosion.triggered && elapsed >= explosion.time) {
+            createExplosion(explosion.x, explosion.y);
+            explosion.triggered = true;
+        }
+    });
+    
+    // Update particles
+    fireworksState.particles.forEach(particle => particle.update());
+    
+    // Remove dead particles
+    fireworksState.particles = fireworksState.particles.filter(particle => !particle.isDead());
+    
+    // End fireworks after 3 seconds or when no particles left
+    if (elapsed > 3000 || fireworksState.particles.length === 0) {
+        fireworksState.active = false;
+    }
+}
+
+function renderFireworks() {
+    if (!fireworksState.active) return;
+    
+    fireworksState.particles.forEach(particle => particle.render());
+}
+
+export function resetFireworks() {
+    fireworksState.active = false;
+    fireworksState.hasStarted = false;
+    fireworksState.particles = [];
+    fireworksState.explosions = [];
+}
 
 // Generate static star field for space levels
 let spaceStars = [];
@@ -491,6 +600,8 @@ function renderLevelComplete() {
                 ctx.fillStyle = '#0f0'; // Green for new record
             } else if (result.message === "Nicht übel gar nicht übel") {
                 ctx.fillStyle = '#ff0'; // Yellow for close time
+            } else if (result.message.includes("% abgeschlossen")) {
+                ctx.fillStyle = '#f80'; // Orange for incomplete cargo (percentage)
             } else {
                 ctx.fillStyle = '#f80'; // Orange for slower time
             }
@@ -516,8 +627,68 @@ function renderGameOver() {
     ctx.fillText(`LEVEL: ${gameState.level}`, canvas.width / 2, canvas.height * 0.3 + (isMobile ? 50 : 60));
     
     if (gameState.mode === 'timeattack') {
-        // Show time attack overview for reached levels
-        renderTimeAttackOverview('partial', canvas.height * 0.3 + (isMobile ? 90 : 110));
+        const result = getLastResult();
+        if (result && result.levelTime) {
+            // Zeit anzeigen (immer, gleiche Position wie Success-Screen)
+            ctx.font = isMobile ? '18px' : '24px';
+            ctx.fillStyle = '#fff';
+            ctx.fillText(`DEINE ZEIT: ${formatTime(result.levelTime)}`, canvas.width / 2, canvas.height * 0.3 + (isMobile ? 120 : 140));
+            
+            let yOffset = isMobile ? 145 : 170;
+            
+            // Bestzeit und Message (conditional)
+            if (result.isFullyComplete) {
+                if (result.personalBest && !result.isNewRecord) {
+                    ctx.font = isMobile ? '14px' : '18px';
+                    ctx.fillStyle = '#888';
+                    ctx.fillText(`BESTZEIT: ${formatTime(result.personalBest)}`, canvas.width / 2, canvas.height * 0.3 + yOffset);
+                    yOffset += isMobile ? 25 : 30;
+                }
+                if (result.message) {
+                    ctx.font = isMobile ? '16px' : '20px';
+                    ctx.fillStyle = result.isNewRecord ? '#0f0' : '#ff0';
+                    ctx.fillText(result.message, canvas.width / 2, canvas.height * 0.3 + yOffset);
+                    yOffset += isMobile ? 25 : 30;
+                }
+            } else {
+                // Prozentuale Completion-Message
+                ctx.font = isMobile ? '16px' : '20px';
+                ctx.fillStyle = '#f80'; // Orange für partielle Completion
+                ctx.fillText(result.message, canvas.width / 2, canvas.height * 0.3 + yOffset);
+                yOffset += isMobile ? 25 : 30;
+            }
+            
+            // Show completed levels from current session
+            if (gameState.level > 1) {
+                const overviewData = getCompactOverviewData(gameState.level - 1);
+                const completedLevels = overviewData.filter(data => data.isFullyComplete);
+                
+                if (completedLevels.length > 0) {
+                    yOffset += isMobile ? 10 : 15;
+                    ctx.font = isMobile ? '14px' : '16px';
+                    ctx.fillStyle = '#aaa';
+                    ctx.fillText('ABGESCHLOSSENE LEVEL:', canvas.width / 2, canvas.height * 0.3 + yOffset);
+                    yOffset += isMobile ? 20 : 25;
+                    
+                    // Create compact list of completed levels
+                    const levelTexts = completedLevels.map(data => 
+                        `Level ${data.level}: ${formatCompactTime(data.time)}`
+                    );
+                    
+                    // Split into lines if too many levels
+                    const maxPerLine = isMobile ? 2 : 3;
+                    for (let i = 0; i < levelTexts.length; i += maxPerLine) {
+                        const lineTexts = levelTexts.slice(i, i + maxPerLine);
+                        const lineText = lineTexts.join(', ');
+                        
+                        ctx.font = isMobile ? '12px' : '14px';
+                        ctx.fillStyle = '#0ff';
+                        ctx.fillText(lineText, canvas.width / 2, canvas.height * 0.3 + yOffset);
+                        yOffset += isMobile ? 18 : 22;
+                    }
+                }
+            }
+        }
     } else {
         // Normal mode: show score
         ctx.fillText(`SCORE: ${gameState.score}`, canvas.width / 2, canvas.height * 0.3 + (isMobile ? 80 : 100));
@@ -530,6 +701,15 @@ function renderGameOver() {
 
 // Render game won screen
 function renderGameWon() {
+    // Start fireworks animation on first render
+    if (!fireworksState.active && !fireworksState.hasStarted) {
+        startFireworks();
+        fireworksState.hasStarted = true;
+    }
+    
+    // Update fireworks
+    updateFireworks();
+    
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
@@ -596,6 +776,9 @@ function renderGameWon() {
     ctx.font = '14px "Courier New"';
     ctx.fillStyle = '#0ff';
     ctx.fillText('ENTER für Hauptmenü', canvas.width / 2, canvas.height - 30);
+    
+    // Render fireworks animation on top
+    renderFireworks();
 }
 
 // Render touch indicator for mobile
@@ -728,10 +911,27 @@ function renderTimeAttackOverview(mode, startY) {
         
         // Render level entry
         const levelText = `L${level.number}: ${level.formatted}`;
-        const recordMarker = level.isSessionRecord ? '*' : '';
         
-        ctx.fillStyle = level.isSessionRecord ? '#0f0' : '#fff';
-        ctx.fillText(levelText + recordMarker, x, y);
+        // Completion-Display für partielle Completions
+        const completionDisplay = level.completionPercentage < 100 
+            ? `(${level.completionPercentage}%)` 
+            : '';
+        
+        // Marker für Session-Records (nur bei 100%)
+        const marker = level.isSessionRecord && level.isFullyComplete ? '*' : '';
+        
+        const displayText = levelText + completionDisplay + marker;
+        
+        // Farbkodierung
+        if (level.isSessionRecord && level.isFullyComplete) {
+            ctx.fillStyle = '#0f0'; // Grün für echte Rekorde
+        } else if (!level.isFullyComplete) {
+            ctx.fillStyle = '#f80'; // Orange für partielle Completion
+        } else {
+            ctx.fillStyle = '#fff'; // Weiß für normale vollständige Zeiten
+        }
+        
+        ctx.fillText(displayText, x, y);
     }
     
     // Summary line

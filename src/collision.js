@@ -156,6 +156,14 @@ export function explode() {
             // Normal game mode
             gameState.lives--;
             if (gameState.lives <= 0) {
+                // Time Attack Evaluation bei Game Over
+                if (gameState.mode === 'timeattack') {
+                    const levelTime = stopLevelTimer();
+                    if (levelTime !== null) {
+                        const completionPercentage = calculateCompletionPercentage();
+                        evaluateTime(levelTime, gameState.level, completionPercentage);
+                    }
+                }
                 gameState.state = 'gameover';
             } else {
                 respawn();
@@ -194,13 +202,34 @@ function isCurrentLevelComplete() {
     return gameState.deliveredCargo >= totalCargo;
 }
 
+// Check if level was completed with all cargo delivered
+function checkLevelCargoCompletion() {
+    const currentLevel = getCurrentLevel();
+    if (!currentLevel) return false;
+    
+    const totalCargoInLevel = currentLevel.platforms.filter(p => p.startingCargo !== null).length;
+    return gameState.deliveredCargo >= totalCargoInLevel;
+}
+
+// Calculate cargo completion percentage for current level
+function calculateCompletionPercentage() {
+    const currentLevel = getCurrentLevel();
+    if (!currentLevel) return 0;
+    
+    const totalCargoInLevel = currentLevel.platforms.filter(p => p.startingCargo !== null).length;
+    if (totalCargoInLevel === 0) return 100; // Edge case: Level ohne Cargo
+    
+    return Math.round((gameState.deliveredCargo / totalCargoInLevel) * 100);
+}
+
 // Handle level completion
 function levelComplete() {
     // Handle time attack timer
     if (gameState.mode === 'timeattack') {
         const levelTime = stopLevelTimer();
         if (levelTime !== null) {
-            evaluateTime(levelTime, gameState.level);
+            const completionPercentage = calculateCompletionPercentage();
+            evaluateTime(levelTime, gameState.level, completionPercentage);
         }
     }
     

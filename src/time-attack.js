@@ -24,9 +24,10 @@ export const timeAttackState = {
     },
     // Session tracking for overview screens
     sessionRecords: new Set(),        // Level-Nummern mit Session-Rekorden
-    sessionCompletions: new Set(),    // Erfolgreich abgeschlossene Level dieser Session
+    sessionLevelsCompleted: new Set(), // Erfolgreich abgeschlossene Level dieser Session
     sessionStartLevel: 1,             // Start-Level dieser Session
-    sessionTimes: {}                  // Level → Zeit Mapping dieser Session
+    sessionTimes: {},                 // Level → Zeit Mapping dieser Session
+    sessionCompletions: {}            // Level → Prozent mapping (Cargo-Completion-Percentage)
 };
 
 // Storage-Key basierend auf Plattform
@@ -142,42 +143,50 @@ function initializeTimeAttackStorage() {
 }
 
 // Bewertungslogik
-export function evaluateTime(currentTime, level) {
+export function evaluateTime(currentTime, level, completionPercentage = 100) {
+    const isFullyComplete = completionPercentage === 100;
     const bestTime = getBestTime(level);
     const isFirstTime = bestTime === null;
     const isNewRecord = !isFirstTime && currentTime < bestTime;
     
     let message = "";
     
-    if (isFirstTime) {
-        // Keine Nachricht bei erstem Durchlauf
-        message = "";
-    } else if (isNewRecord) {
-        message = "Das war Spitze!";
-    } else {
-        const timeDifference = currentTime - bestTime;
-        const percentage = (timeDifference / bestTime) * 100;
-        
-        if (percentage <= 10) {
-            message = "Nicht übel gar nicht übel";
+    if (isFullyComplete) {
+        // Bestehende Logic für 100% Completion
+        if (isFirstTime) {
+            message = "";
+        } else if (isNewRecord) {
+            message = "Das war Spitze!";
         } else {
-            message = "Das geht auch schneller";
+            const timeDifference = currentTime - bestTime;
+            const percentage = (timeDifference / bestTime) * 100;
+            
+            if (percentage <= 10) {
+                message = "Nicht übel gar nicht übel";
+            } else {
+                message = "Das geht auch schneller";
+            }
         }
+    } else {
+        // Neue prozentuale Completion-Message
+        message = `Level ${completionPercentage}% abgeschlossen`;
     }
     
     timeAttackState.lastResult = {
         levelTime: currentTime,
-        personalBest: isFirstTime ? currentTime : (isNewRecord ? currentTime : bestTime),
-        isNewRecord: isNewRecord,
+        completionPercentage: completionPercentage,
+        isFullyComplete: isFullyComplete,
+        personalBest: isFirstTime ? (isFullyComplete ? currentTime : null) : (isNewRecord && isFullyComplete ? currentTime : bestTime),
+        isNewRecord: isNewRecord && isFullyComplete, // Nur bei vollständiger Completion
         isFirstTime: isFirstTime,
         message: message
     };
     
     // Session-Tracking für Übersichtsscreens
-    trackLevelCompletion(level, currentTime);
+    trackLevelCompletion(level, currentTime, completionPercentage);
     
-    // Neue Bestzeit speichern (auch bei erstem Durchlauf)
-    if (isFirstTime || isNewRecord) {
+    // Neue Bestzeit nur bei vollständiger Cargo-Completion speichern
+    if (isFullyComplete && (isFirstTime || isNewRecord)) {
         saveBestTime(level, currentTime);
     }
     
@@ -237,18 +246,21 @@ export function resetCurrentRun() {
 // Session Management Functions
 export function startNewSession(startLevel = 1) {
     timeAttackState.sessionRecords.clear();
-    timeAttackState.sessionCompletions.clear();
+    timeAttackState.sessionLevelsCompleted.clear();
     timeAttackState.sessionStartLevel = startLevel;
     timeAttackState.sessionTimes = {};
+    timeAttackState.sessionCompletions = {}; // Reset completion percentages
 }
 
-export function trackLevelCompletion(level, time) {
-    timeAttackState.sessionCompletions.add(level);
+export function trackLevelCompletion(level, time, completionPercentage = 100) {
+    timeAttackState.sessionLevelsCompleted.add(level);
     timeAttackState.sessionTimes[level] = time;
+    timeAttackState.sessionCompletions[level] = completionPercentage;
     
-    // Check if this is a session record
+    // Nur 100% Completions als Session-Records tracken
     const previousBest = getBestTime(level);
-    if (previousBest === null || time < previousBest) {
+    const isFullyComplete = completionPercentage === 100;
+    if (isFullyComplete && (previousBest === null || time < previousBest)) {
         timeAttackState.sessionRecords.add(level);
     }
 }
@@ -258,7 +270,7 @@ export function isSessionRecord(level) {
 }
 
 export function getSessionCompletions() {
-    return Array.from(timeAttackState.sessionCompletions).sort((a, b) => a - b);
+    return Array.from(timeAttackState.sessionLevelsCompleted).sort((a, b) => a - b);
 }
 
 export function getSessionRecordCount() {
@@ -288,7 +300,9 @@ export function getCompactOverviewData(maxLevel = null) {
         number: level,
         time: timeAttackState.sessionTimes[level],
         formatted: formatCompactTime(timeAttackState.sessionTimes[level]),
+        completionPercentage: timeAttackState.sessionCompletions[level] || 100, // Default 100 for backward compatibility
         isSessionRecord: isSessionRecord(level),
+        isFullyComplete: (timeAttackState.sessionCompletions[level] || 100) === 100,
         wasCompleted: true
     }));
     

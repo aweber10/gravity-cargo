@@ -7,6 +7,7 @@ import { togglePause, handleMenuSelection, handlePauseMenuSelection, handleTrain
 import { getMaxLevelCount } from './level-manager.js';
 import { isMobile } from "./device-detection.js";
 import { getDisplayTime, isCountdownMode, isOvertime, formatTime } from './time-attack.js';
+import { resetFireworks } from './renderer.js';
 export { isMobile };
 
 // Timer optimization: Cache DOM elements and track changes to reduce updates
@@ -160,6 +161,7 @@ export function initMenu() {
     
     gameState.state = 'menu';
     window.levelSelectBounds = [];
+    resetFireworks();
 }
 
 // Handle keyboard events
@@ -356,6 +358,8 @@ export function setupTouchControls() {
             e.preventDefault();
             if (gameState.state === 'playing' || gameState.state === 'paused') {
                 togglePause();
+            } else if (gameState.state === 'gameover') {
+                initMenu();
             }
         });
     }
