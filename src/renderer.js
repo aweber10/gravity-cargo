@@ -305,6 +305,11 @@ export function render() {
     }
     ctx.globalAlpha = 1.0;
     
+    // Render timer for time attack mode
+    if (gameState.state === 'playing' && gameState.mode === 'timeattack') {
+        renderCanvasTimer();
+    }
+    
     // Render touch indicator
     if (gameState.state === 'playing') {
         renderTouchIndicator();
@@ -667,7 +672,7 @@ function renderGameOver() {
             // Show completed levels from current session
             if (gameState.level > 1) {
                 const overviewData = getCompactOverviewData(gameState.level - 1);
-                const completedLevels = overviewData.filter(data => data.isFullyComplete);
+                const completedLevels = overviewData.levels.filter(data => data.isFullyComplete);
                 
                 if (completedLevels.length > 0) {
                     yOffset += isMobile ? 10 : 15;
@@ -953,6 +958,57 @@ function renderTimeAttackOverview(mode, startY) {
     
     ctx.fillStyle = '#ff0';
     ctx.fillText(summaryText, canvas.width / 2, summaryY);
+    
+    ctx.restore();
+}
+
+// Render timer on canvas for time attack mode
+function renderCanvasTimer() {
+    const displayTime = getDisplayTime();
+    const timeText = formatTime(displayTime);
+    
+    // Build timer text
+    const timerText = isOvertime() 
+        ? `ZEIT: +${timeText}` 
+        : `ZEIT: ${timeText}`;
+    
+    // Determine color based on timer state
+    let timerColor = '#fff'; // Default stopwatch color (white)
+    if (isOvertime()) {
+        timerColor = '#f00'; // Overtime color (red)
+    } else if (isCountdownMode()) {
+        timerColor = '#ff0'; // Countdown color (yellow)
+    }
+    
+    // Position timer in top-center (matching DOM position)
+    const timerX = canvas.width / 2;
+    const timerY = isMobile ? 35 : 45; // Adjust for mobile spacing
+    
+    ctx.save();
+    
+    // Add text shadow effect (matching CSS text-shadow: 2px 2px 4px #000)
+    ctx.shadowColor = '#000';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
+    
+    // Set font and styling (matching CSS)
+    ctx.font = `bold ${isMobile ? '18px' : '20px'} "Courier New", monospace`;
+    ctx.fillStyle = timerColor;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    
+    // Render timer text
+    ctx.fillText(timerText, timerX, timerY);
+    
+    // Add blinking effect for overtime (matching CSS animation)
+    if (isOvertime()) {
+        const blinkCycle = (Date.now() % 1000) / 1000; // 1 second cycle
+        if (blinkCycle > 0.5) {
+            ctx.globalAlpha = 0.3;
+            ctx.fillText(timerText, timerX, timerY);
+        }
+    }
     
     ctx.restore();
 }

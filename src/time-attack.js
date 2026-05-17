@@ -40,6 +40,9 @@ function getStorageKey() {
 export function startLevelTimer(level) {
     if (!timeAttackState.isActive) return;
     
+    // Reset current run state completely to prevent timer bugs
+    resetCurrentRun();
+    
     timeAttackState.currentRun.levelStartTime = performance.now();
     timeAttackState.currentRun.personalBest = getBestTime(level);
     timeAttackState.currentRun.isCountdown = !!timeAttackState.currentRun.personalBest;

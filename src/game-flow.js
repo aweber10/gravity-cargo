@@ -2,7 +2,7 @@
 // Handles game state transitions, menu systems, and high-level game flow
 
 import { gameState, setGameMode } from './game-state.js';
-import { menu, pauseMenu, initMenu as uiInitMenu, setupKeyboardControls, setupTouchControls, setupClickControls, resetTimerCache } from './ui.js';
+import { menu, pauseMenu, initMenu as uiInitMenu, setupKeyboardControls, setupTouchControls, setupClickControls } from './ui.js';
 import { initCanvas } from './renderer.js';
 import { initLevel } from './level-manager.js';
 import { setShipPosition, setShipVelocity, setShipAngle, setShipSettling } from './ship-physics.js';
@@ -92,7 +92,7 @@ export function handleMenuSelection() {
 export function startNewGame() {
     setGameMode('normal');
     deactivateTimeAttack();
-    resetTimerCache(); // Reset timer cache when switching to normal mode
+    // Timer cache reset no longer needed (timer moved to Canvas)
     
     gameState.level = 1;
     gameState.score = 0;
@@ -118,7 +118,7 @@ export function startNewGame() {
 export function startTimeAttack() {
     setGameMode('timeattack');
     activateTimeAttack();
-    resetTimerCache(); // Reset timer cache when switching to time attack mode
+    // Timer cache reset no longer needed (timer moved to Canvas)
     
     gameState.level = 1;
     gameState.score = 0;
@@ -146,7 +146,7 @@ export function continueGame() {
         if (saveData) {
             setGameMode('normal');
             deactivateTimeAttack();
-            resetTimerCache(); // Reset timer cache when continuing normal game
+            // Timer cache reset no longer needed (timer moved to Canvas)
             
             gameState.level = saveData.level;
             gameState.score = saveData.score;
@@ -203,7 +203,7 @@ export function initGame() {
 export function startTrainingMode() {
     setGameMode('training');
     deactivateTimeAttack();
-    resetTimerCache(); // Reset timer cache when switching to training mode
+    // Timer cache reset no longer needed (timer moved to Canvas)
     
     gameState.state = 'levelselect';
     gameState.trainingMode = true;
