@@ -1,6 +1,8 @@
 // src/game-state.js
 // Manages game state, score, lives, and level progression
 
+import { triggerScoreUpdate } from './renderer.js';
+
 // Game State
 export const gameState = {
     state: 'menu', // menu, playing, paused, levelcomplete, gameover, gamewon, levelselect
@@ -36,6 +38,7 @@ export function resetGameState() {
     gameState.state = 'menu';
     gameState.mode = 'normal';
     gameState.score = 0;
+    triggerScoreUpdate(); // Trigger score re-render on state reset
     gameState.lives = 3;
     gameState.level = 1;
     gameState.lastCompletedLevel = 0;
@@ -52,6 +55,7 @@ export function resetGameState() {
 
 export function updateScore(points) {
     gameState.score += points;
+    triggerScoreUpdate(); // Trigger score re-render only when changed
 }
 
 export function loseLife() {

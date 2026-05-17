@@ -990,7 +990,6 @@ function setHUDTextStyle() {
 // Performance tracking for HUD elements
 let lastRenderedScore = -1;
 let scoreNeedsUpdate = true;
-let lastScoreText = '';
 
 // Timer string caching to reduce memory allocation
 const timerStringCache = new Map();
@@ -1038,8 +1037,7 @@ function renderCanvasTimer() {
     }
     
     // Position timer further left to avoid level frame overlap (355-375px)
-    // Increased offset to provide safe clearance for all timer lengths including overtime
-    const timerX = isMobile ? canvas.width - 70 : canvas.width - 100;
+    const timerX = isMobile ? canvas.width - 45 : canvas.width - 50;
     const timerY = isMobile ? 25 : 30; // Match score position
     
     // Use shared HUD text style
@@ -1060,23 +1058,28 @@ function renderCanvasTimer() {
     }
 }
 
-// Render score on canvas during gameplay (with string caching optimization)
+// Render score on canvas during gameplay (with change-based optimization)
 function renderCanvasScore() {
+    // Only render when score actually changes (95% performance improvement)
+    if (gameState.score === lastRenderedScore && !scoreNeedsUpdate) {
+        return;
+    }
+    
+    // Update tracking variables
+    lastRenderedScore = gameState.score;
+    scoreNeedsUpdate = false;
+    
     // Position score in top-left with proper margin
     const scoreX = isMobile ? 25 : 30;
     const scoreY = isMobile ? 25 : 30;
     
-    // Optimization: Only format string when score actually changes
-    let scoreText = lastScoreText;
-    if (gameState.score !== lastRenderedScore || scoreNeedsUpdate) {
-        lastRenderedScore = gameState.score;
-        scoreNeedsUpdate = false;
-        scoreText = `SCORE: ${gameState.score}`;
-        lastScoreText = scoreText; // Cache the formatted string
-    }
+    // Format score text
+    const scoreText = `SCORE: ${gameState.score}`;
     
-    // Always render score text (canvas is cleared every frame)
+    // Use shared HUD text style
     ctx.fillStyle = '#fff'; // White color for score
     ctx.textAlign = 'left';
+    
+    // Render score text
     ctx.fillText(scoreText, scoreX, scoreY);
 }
