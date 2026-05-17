@@ -96,11 +96,17 @@ function updateFireworks() {
         }
     });
     
-    // Update particles
-    fireworksState.particles.forEach(particle => particle.update());
-    
-    // Remove dead particles
-    fireworksState.particles = fireworksState.particles.filter(particle => !particle.isDead());
+    // Update particles with optimized removal for better performance
+    for (let i = fireworksState.particles.length - 1; i >= 0; i--) {
+        const particle = fireworksState.particles[i];
+        particle.update();
+        
+        if (particle.isDead()) {
+            // Swap with last element and pop (more efficient than filter)
+            fireworksState.particles[i] = fireworksState.particles[fireworksState.particles.length - 1];
+            fireworksState.particles.pop();
+        }
+    }
     
     // End fireworks after 3 seconds or when no particles left
     if (elapsed > 3000 || fireworksState.particles.length === 0) {

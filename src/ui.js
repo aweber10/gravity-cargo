@@ -8,13 +8,40 @@ import { getMaxLevelCount } from './level-manager.js';
 import { isMobile } from "./device-detection.js";
 import { getDisplayTime, isCountdownMode, isOvertime, formatTime } from './time-attack.js';
 import { resetFireworks } from './renderer.js';
+import { getSharedFrameTime } from './main.js';
 export { isMobile };
 
-// Timer optimization: Cache DOM elements and track changes to reduce updates
-let timerElementCache = null;
+// Comprehensive UI element caching for performance optimization
+let uiElementCache = {
+    timer: null,
+    lives: null,
+    fuelBar: null,
+    targetPlatform: null,
+    mobilePause: null
+};
+
+// Timer optimization: Track changes to reduce updates
 let lastTimerText = '';
 let lastTimerClass = '';
 let lastTimerVisibility = null;
+
+// Timer throttling: Update timer only 20fps instead of 60fps to improve performance
+let lastTimerUpdate = 0;
+const TIMER_UPDATE_INTERVAL = 50; // 50ms = 20fps
+
+// UI state caching to reduce unnecessary updates
+let lastLivesCount = -1;
+let lastFuelPercent = -1;
+let lastTargetText = '';
+
+// Cache UI elements once to avoid repeated getElementById calls
+function cacheUIElements() {
+    if (!uiElementCache.timer) uiElementCache.timer = document.getElementById('timer');
+    if (!uiElementCache.lives) uiElementCache.lives = document.getElementById('lives');
+    if (!uiElementCache.fuelBar) uiElementCache.fuelBar = document.getElementById('fuel-bar');
+    if (!uiElementCache.targetPlatform) uiElementCache.targetPlatform = document.getElementById('target-platform');
+    if (!uiElementCache.mobilePause) uiElementCache.mobilePause = document.getElementById('mobile-pause');
+}
 
 // Menu state
 export const menu = {
@@ -46,82 +73,82 @@ export const pauseMenu = {
 
 // Update UI elements
 export function updateUI() {
-    // Update score
-    const scoreElement = document.getElementById('score');
-    if (scoreElement) {
-        scoreElement.textContent = `SCORE: ${gameState.score.toString().padStart(2, '0')}`;
-    }
+    // Cache UI elements on first call
+    cacheUIElements();
     
-    // Update timer for time attack mode (optimized with change detection)
-    if (!timerElementCache) {
-        timerElementCache = document.getElementById('timer');
-    }
-    
-    if (timerElementCache) {
-        const shouldShow = (gameState.mode === 'timeattack' && gameState.state === 'playing');
-        
-        if (shouldShow) {
-            const displayTime = getDisplayTime();
-            const timeText = formatTime(displayTime);
+    // Update timer for time attack mode (throttled to 20fps for better performance)
+    const now = getSharedFrameTime();
+    if (now - lastTimerUpdate >= TIMER_UPDATE_INTERVAL) {
+        if (uiElementCache.timer) {
+            const shouldShow = (gameState.mode === 'timeattack' && gameState.state === 'playing');
             
-            // Build current text and class
-            const currentText = isOvertime() 
-                ? `ZEIT: +${timeText}` 
-                : `ZEIT: ${timeText}`;
+            if (shouldShow) {
+                const displayTime = getDisplayTime();
+                const timeText = formatTime(displayTime);
                 
-            const currentClass = isOvertime() ? 'overtime' 
-                : isCountdownMode() ? 'countdown' 
-                : 'stopwatch';
-            
-            // Only update DOM when values actually change
-            if (currentText !== lastTimerText) {
-                timerElementCache.textContent = currentText;
-                lastTimerText = currentText;
+                // Build current text and class
+                const currentText = isOvertime() 
+                    ? `ZEIT: +${timeText}` 
+                    : `ZEIT: ${timeText}`;
+                    
+                const currentClass = isOvertime() ? 'overtime' 
+                    : isCountdownMode() ? 'countdown' 
+                    : 'stopwatch';
+                
+                // Only update DOM when values actually change
+                if (currentText !== lastTimerText) {
+                    uiElementCache.timer.textContent = currentText;
+                    lastTimerText = currentText;
+                }
+                
+                if (currentClass !== lastTimerClass) {
+                    uiElementCache.timer.className = currentClass;
+                    lastTimerClass = currentClass;
+                }
             }
             
-            if (currentClass !== lastTimerClass) {
-                timerElementCache.className = currentClass;
-                lastTimerClass = currentClass;
+            // Only update visibility when it changes
+            if (shouldShow !== lastTimerVisibility) {
+                uiElementCache.timer.style.display = shouldShow ? 'block' : 'none';
+                lastTimerVisibility = shouldShow;
             }
         }
         
-        // Only update visibility when it changes
-        if (shouldShow !== lastTimerVisibility) {
-            timerElementCache.style.display = shouldShow ? 'block' : 'none';
-            lastTimerVisibility = shouldShow;
-        }
+        lastTimerUpdate = now;
     }
     
-    // Update lives
-    const livesContainer = document.getElementById('lives');
-    if (livesContainer) {
-        livesContainer.innerHTML = '';
+    // Update lives (only when count changes)
+    if (gameState.lives !== lastLivesCount && uiElementCache.lives) {
+        uiElementCache.lives.innerHTML = '';
         for (let i = 0; i < gameState.lives; i++) {
             const lifeIcon = document.createElement('div');
             lifeIcon.className = 'life-icon';
-            livesContainer.appendChild(lifeIcon);
+            uiElementCache.lives.appendChild(lifeIcon);
+        }
+        lastLivesCount = gameState.lives;
+    }
+    
+    // Update fuel bar (only when percentage changes significantly)
+    if (uiElementCache.fuelBar) {
+        const fuelPercent = Math.round((gameState.fuel / gameState.maxFuel) * 100);
+        if (fuelPercent !== lastFuelPercent) {
+            uiElementCache.fuelBar.style.width = fuelPercent + '%';
+            
+            uiElementCache.fuelBar.classList.remove('low', 'critical');
+            if (fuelPercent < 20) {
+                uiElementCache.fuelBar.classList.add('critical');
+            } else if (fuelPercent < 50) {
+                uiElementCache.fuelBar.classList.add('low');
+            }
+            lastFuelPercent = fuelPercent;
         }
     }
     
-    // Update fuel bar
-    const fuelBar = document.getElementById('fuel-bar');
-    if (fuelBar) {
-        const fuelPercent = (gameState.fuel / gameState.maxFuel) * 100;
-        fuelBar.style.width = fuelPercent + '%';
-        
-        fuelBar.classList.remove('low', 'critical');
-        if (fuelPercent < 20) {
-            fuelBar.classList.add('critical');
-        } else if (fuelPercent < 50) {
-            fuelBar.classList.add('low');
-        }
-    }
-    
-    // Update target platform
+    // Update target platform (only when text changes)
     const targetText = gameState.currentCargo ? `TARGET: ${gameState.currentCargo}` : 'TARGET: --';
-    const targetElement = document.getElementById('target-platform');
-    if (targetElement) {
-        targetElement.textContent = targetText;
+    if (targetText !== lastTargetText && uiElementCache.targetPlatform) {
+        uiElementCache.targetPlatform.textContent = targetText;
+        lastTargetText = targetText;
     }
 }
 

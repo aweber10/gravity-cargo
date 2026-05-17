@@ -12,19 +12,28 @@ import { PHYSICS } from './config.js?v=12';
 import { asteroidManager } from './asteroid-manager.js';
 import { updateTimer } from './time-attack.js';
 
-// Game loop variables
 let lastTime = 0;
+
+// Shared performance timestamp for frame-based operations to reduce performance.now() calls
+let sharedFrameTime = 0;
+
+// Export shared frame time for other modules
+export function getSharedFrameTime() {
+    return sharedFrameTime;
+}
 
 // Update function
 function update(dt) {
-    // Update particles (this should be in a separate module, but keeping it here for now)
+    // Update particles with optimized swap-and-pop removal for better performance
     for (let i = gameState.particles.length - 1; i >= 0; i--) {
         const p = gameState.particles[i];
         p.x += p.vx;
         p.y += p.vy;
         p.life -= dt * 1.2;
         if (p.life <= 0) {
-            gameState.particles.splice(i, 1);
+            // Swap with last element and pop (more efficient than splice)
+            gameState.particles[i] = gameState.particles[gameState.particles.length - 1];
+            gameState.particles.pop();
         }
     }
     
@@ -52,8 +61,12 @@ function update(dt) {
 
 // Game loop
 function gameLoop(timestamp) {
-    const dt = Math.min((timestamp - lastTime) / 1000, 0.1);
+    if (lastTime === 0) lastTime = timestamp;
+    const dt = (timestamp - lastTime) / 1000;
     lastTime = timestamp;
+    
+    // Update shared frame time for performance optimization
+    sharedFrameTime = performance.now();
     
     if (dt > 0) {
         update(dt);

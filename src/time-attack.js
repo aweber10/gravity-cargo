@@ -193,22 +193,56 @@ export function evaluateTime(currentTime, level, completionPercentage = 100) {
     return timeAttackState.lastResult;
 }
 
-// Zeit-Formatierung
+// Time formatting cache for performance optimization
+const timeFormatCache = new Map();
+const compactTimeFormatCache = new Map();
+
+// Zeit-Formatierung with caching for better performance
 export function formatTime(timeInSeconds) {
     if (timeInSeconds === null || timeInSeconds === undefined) return "--:--.-";
     
-    const minutes = Math.floor(timeInSeconds / 60);
-    const seconds = Math.floor(timeInSeconds % 60);
-    const tenths = Math.floor((timeInSeconds % 1) * 10);
+    // Round to tenths for cache key consistency
+    const roundedTime = Math.round(timeInSeconds * 10) / 10;
     
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${tenths}`;
+    if (timeFormatCache.has(roundedTime)) {
+        return timeFormatCache.get(roundedTime);
+    }
+    
+    const minutes = Math.floor(roundedTime / 60);
+    const seconds = Math.floor(roundedTime % 60);
+    const tenths = Math.floor((roundedTime % 1) * 10);
+    
+    const formatted = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${tenths}`;
+    
+    // Cache result, but limit cache size to prevent memory leaks
+    if (timeFormatCache.size > 1000) {
+        timeFormatCache.clear();
+    }
+    timeFormatCache.set(roundedTime, formatted);
+    
+    return formatted;
 }
 
-// Kompakte Zeit-Formatierung für Übersichtsscreens (Sekunden mit Zehntel)
+// Kompakte Zeit-Formatierung für Übersichtsscreens (Sekunden mit Zehntel) with caching
 export function formatCompactTime(timeInSeconds) {
     if (timeInSeconds === null || timeInSeconds === undefined) return "--.-s";
     
-    return `${timeInSeconds.toFixed(1)}s`;
+    // Round to tenths for cache key consistency
+    const roundedTime = Math.round(timeInSeconds * 10) / 10;
+    
+    if (compactTimeFormatCache.has(roundedTime)) {
+        return compactTimeFormatCache.get(roundedTime);
+    }
+    
+    const formatted = `${roundedTime.toFixed(1)}s`;
+    
+    // Cache result, but limit cache size to prevent memory leaks
+    if (compactTimeFormatCache.size > 1000) {
+        compactTimeFormatCache.clear();
+    }
+    compactTimeFormatCache.set(roundedTime, formatted);
+    
+    return formatted;
 }
 
 // Zeitrennen-Modus Aktivierung
