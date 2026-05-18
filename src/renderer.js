@@ -6,154 +6,46 @@ import { getShip, getTouchState } from './ship-physics.js';
 import { getWalls, getPlatforms, getMaxScore, getLevelTemplates, getCurrentLevel, getLevelBounds } from './level-manager.js';
 import { isMobile, menu, pauseMenu, levelSelectMenu } from './ui.js';
 import { asteroidManager } from './asteroid-manager.js';
-import { getDisplayTime, isCountdownMode, isOvertime, formatTime, formatCompactTime, getLastResult, getCompactOverviewData } from './time-attack.js';
+import { renderGameplayHUD, triggerScoreUpdate as triggerHUDScoreUpdate } from './hud-renderer.js';
+import {
+    renderGameOver,
+    renderGameWon,
+    renderLevelComplete,
+    resetFireworks as resetEndScreenFireworks
+} from './end-screen-renderer.js';
+import {
+    renderLevelSelect as renderLevelSelectScreen,
+    renderMenu as renderMainMenu,
+    renderPauseScreen as renderPauseMenuScreen
+} from './menu-renderer.js';
+import {
+    generateSpaceStars,
+    renderBackgroundForCurrentLevel,
+    renderLevelScene as renderPlayableLevelScene,
+    renderTouchIndicator
+} from './scene-renderer.js';
 import {
     createDOMHUDLayout,
     createGameplayHUDLayout,
     createLevelScreenRect,
-    shouldRenderGameplayHUD,
-    shouldRenderTimeAttackTimer
+    shouldRenderGameplayHUD
 } from './renderer-layout.js';
 
 // Canvas setup
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// Fireworks system for GameWon screen
-let fireworksState = {
-    active: false,
-    startTime: 0,
-    particles: [],
-    explosions: []
-};
-
-class Particle {
-    constructor(x, y, vx, vy, color, life) {
-        this.x = x;
-        this.y = y;
-        this.vx = vx;
-        this.vy = vy;
-        this.color = color;
-        this.life = life;
-        this.maxLife = life;
-        this.gravity = 0.2;
-    }
-    
-    update() {
-        this.x += this.vx;
-        this.y += this.vy;
-        this.vy += this.gravity;
-        this.life--;
-        this.vx *= 0.99; // air resistance
-    }
-    
-    render() {
-        const alpha = this.life / this.maxLife;
-        ctx.save();
-        ctx.globalAlpha = alpha;
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x - 1, this.y - 1, 2, 2);
-        ctx.restore();
-    }
-    
-    isDead() {
-        return this.life <= 0;
-    }
-}
-
-function startFireworks() {
-    fireworksState.active = true;
-    fireworksState.startTime = Date.now();
-    fireworksState.particles = [];
-    fireworksState.explosions = [
-        { time: 0, x: canvas.width * 0.3, y: canvas.height * 0.4 },
-        { time: 500, x: canvas.width * 0.7, y: canvas.height * 0.3 },
-        { time: 1000, x: canvas.width * 0.5, y: canvas.height * 0.35 },
-        { time: 1500, x: canvas.width * 0.2, y: canvas.height * 0.45 },
-        { time: 2000, x: canvas.width * 0.8, y: canvas.height * 0.4 }
-    ];
-}
-
-function createExplosion(x, y) {
-    const colors = ['#ff0000', '#ff8800', '#ffff00', '#00ff00', '#0088ff', '#8800ff', '#ff00ff'];
-    const particleCount = isMobile ? 15 : 25;
-    
-    for (let i = 0; i < particleCount; i++) {
-        const angle = (Math.PI * 2 * i) / particleCount + Math.random() * 0.5;
-        const speed = 2 + Math.random() * 4;
-        const vx = Math.cos(angle) * speed;
-        const vy = Math.sin(angle) * speed;
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        const life = 60 + Math.random() * 40;
-        
-        fireworksState.particles.push(new Particle(x, y, vx, vy, color, life));
-    }
-}
-
-function updateFireworks() {
-    if (!fireworksState.active) return;
-    
-    const elapsed = Date.now() - fireworksState.startTime;
-    
-    // Check for new explosions
-    fireworksState.explosions.forEach(explosion => {
-        if (!explosion.triggered && elapsed >= explosion.time) {
-            createExplosion(explosion.x, explosion.y);
-            explosion.triggered = true;
-        }
-    });
-    
-    // Update particles with optimized removal for better performance
-    for (let i = fireworksState.particles.length - 1; i >= 0; i--) {
-        const particle = fireworksState.particles[i];
-        particle.update();
-        
-        if (particle.isDead()) {
-            // Swap with last element and pop (more efficient than filter)
-            fireworksState.particles[i] = fireworksState.particles[fireworksState.particles.length - 1];
-            fireworksState.particles.pop();
-        }
-    }
-    
-    // End fireworks after 3 seconds or when no particles left
-    if (elapsed > 3000 || fireworksState.particles.length === 0) {
-        fireworksState.active = false;
-    }
-}
-
-function renderFireworks() {
-    if (!fireworksState.active) return;
-    
-    fireworksState.particles.forEach(particle => particle.render());
-}
-
 export function resetFireworks() {
-    fireworksState.active = false;
-    fireworksState.hasStarted = false;
-    fireworksState.particles = [];
-    fireworksState.explosions = [];
+    resetEndScreenFireworks();
 }
 
 // Trigger score re-render when score changes
 export function triggerScoreUpdate() {
-    scoreNeedsUpdate = true;
+    triggerHUDScoreUpdate();
 }
 
 // Generate static star field for space levels
 let spaceStars = [];
-
-function generateSpaceStars() {
-    spaceStars = [];
-    const starCount = isMobile ? 30 : 50;
-    
-    for (let i = 0; i < starCount; i++) {
-        spaceStars.push({
-            x: Math.random() * (isMobile ? 375 : 800),
-            y: Math.random() * (isMobile ? 667 : 600),
-            brightness: 0.3 + Math.random() * 0.7
-        });
-    }
-}
 
 // Resize canvas based on device
 export function resizeCanvas() {
@@ -180,7 +72,7 @@ export function resizeCanvas() {
 // Initialize canvas
 export function initCanvas() {
     resizeCanvas();
-    generateSpaceStars();
+    spaceStars = generateSpaceStars(isMobile);
     window.addEventListener('resize', resizeCanvas);
 }
 
@@ -247,45 +139,48 @@ export function render() {
     const isSpaceLevel = currentLevel && currentLevel.backgroundType === 'space';
     updateDOMHUDLayout();
 
-    renderBackgroundForCurrentLevel(isSpaceLevel);
+    renderBackgroundForCurrentLevel({ ctx, canvas, isSpaceLevel, spaceStars });
     if (renderBlockingScreenIfNeeded()) return;
 
     renderLevelScene(isSpaceLevel);
     renderPauseOverlayIfNeeded();
 }
 
-function renderBackgroundForCurrentLevel(isSpaceLevel) {
-    if (isSpaceLevel) {
-        renderSpaceBackground();
-    } else {
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-}
-
 function renderBlockingScreenIfNeeded() {
     if (gameState.state === 'menu') {
-        renderMenu();
+        renderMainMenu({ ctx, canvas, isMobile, menu });
         return true;
     }
 
     if (gameState.state === 'levelselect' && isShowLevelSelect()) {
-        renderLevelSelect();
+        renderLevelSelectScreen({
+            ctx,
+            canvas,
+            isMobile,
+            levelSelectMenu,
+            levelTemplates: getLevelTemplates()
+        });
         return true;
     }
 
     if (gameState.state === 'gamewon') {
-        renderGameWon();
+        renderGameWon({ ctx, canvas, gameState, isMobile, maxScore: getMaxScore() });
         return true;
     }
 
     if (gameState.state === 'levelcomplete') {
-        renderLevelComplete();
+        renderLevelComplete({
+            ctx,
+            canvas,
+            gameState,
+            isMobile,
+            levelTemplates: getLevelTemplates()
+        });
         return true;
     }
 
     if (gameState.state === 'gameover') {
-        renderGameOver();
+        renderGameOver({ ctx, canvas, gameState, isMobile });
         return true;
     }
 
@@ -293,876 +188,46 @@ function renderBlockingScreenIfNeeded() {
 }
 
 function renderLevelScene(isSpaceLevel) {
-    ctx.save();
-
-    renderWalls(isSpaceLevel);
-    renderAsteroidsIfNeeded(isSpaceLevel);
-    renderPlatforms();
-    renderShipIfVisible();
-    renderParticles();
+    renderPlayableLevelScene({
+        ctx,
+        gameState,
+        isSpaceLevel,
+        walls: getWalls(),
+        platforms: getPlatforms(),
+        ship: getShip(),
+        activeAsteroids: asteroidManager.getActiveAsteroids()
+    });
     renderGameplayOverlay();
-
-    ctx.restore();
-}
-
-function renderWalls(isSpaceLevel) {
-    // Render walls
-    const walls = getWalls();
-    for (const wall of walls) {
-        ctx.fillStyle = isSpaceLevel ? '#333' : '#0ff';
-        ctx.beginPath();
-        ctx.moveTo(wall.points[0][0], wall.points[0][1]);
-        for (let i = 1; i < wall.points.length; i++) {
-            ctx.lineTo(wall.points[i][0], wall.points[i][1]);
-        }
-        ctx.closePath();
-        ctx.fill();
-    }
-}
-
-function renderAsteroidsIfNeeded(isSpaceLevel) {
-    if (isSpaceLevel) {
-        renderAsteroids();
-    }
-}
-
-function renderPlatforms() {
-    // Render platforms
-    const platforms = getPlatforms();
-    for (const platform of platforms) {
-        const isTarget = gameState.currentCargo === platform.id;
-        ctx.strokeStyle = isTarget ? '#fff' : '#0f0';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.moveTo(platform.position[0], platform.position[1]);
-        ctx.lineTo(platform.position[0] + platform.width, platform.position[1]);
-        ctx.stroke();
-        
-        ctx.fillStyle = '#fff';
-        ctx.font = '14px "Courier New"';
-        ctx.fillText(platform.id, platform.position[0] + 5, platform.position[1] - 5);
-        
-        if (platform.startingCargo) {
-            ctx.fillStyle = '#ff0';
-            ctx.fillRect(
-                platform.position[0] + platform.width / 2 - 8,
-                platform.position[1] - 20,
-                16,
-                16
-            );
-        }
-    }
-}
-
-function renderShipIfVisible() {
-    // Render ship (except during explosion)
-    if (gameState.state !== 'exploding') {
-        ctx.save();
-        ctx.translate(getShip().x, getShip().y);
-        ctx.rotate(getShip().angle);
-        
-        // Render thrust
-        if (getShip().thrusting) {
-            ctx.fillStyle = '#ff8800';
-            ctx.beginPath();
-            ctx.moveTo(-6, getShip().size / 2);
-            ctx.lineTo(0, getShip().size / 2 + 15);
-            ctx.lineTo(6, getShip().size / 2);
-            ctx.closePath();
-            ctx.fill();
-        }
-        
-        // Render ship body
-        ctx.strokeStyle = '#fff';
-        ctx.fillStyle = '#ccc';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(0, -getShip().size / 2);
-        ctx.lineTo(-getShip().size / 2, getShip().size / 2);
-        ctx.lineTo(getShip().size / 2, getShip().size / 2);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-        
-        ctx.restore();
-    }
-}
-
-function renderParticles() {
-    // Render particles
-    for (const particle of gameState.particles) {
-        ctx.fillStyle = particle.color;
-        ctx.globalAlpha = particle.life;
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-        ctx.fill();
-    }
-    ctx.globalAlpha = 1.0;
 }
 
 function renderGameplayOverlay() {
     // Render HUD elements during gameplay
     if (shouldRenderGameplayHUD(gameState)) {
-        // Set shared HUD text style once per frame for both score and timer
-        ctx.save();
-        setHUDTextStyle();
-        
-        // Render score (with change-based optimization)
-        renderCanvasScore();
-        
-        // Render timer for time attack mode (with string caching)
-        if (shouldRenderTimeAttackTimer(gameState)) {
-            renderCanvasTimer();
-        }
-        
-        ctx.restore();
-        
+        renderGameplayHUD({
+            ctx,
+            gameState,
+            isMobile,
+            hudLayout: getGameplayHUDLayout()
+        });
+
         // Render touch indicator
-        renderTouchIndicator();
+        renderTouchIndicator({
+            ctx,
+            ship: getShip(),
+            touchState: getTouchState()
+        });
     }
 }
 
 function renderPauseOverlayIfNeeded() {
     // Render pause screen
     if (gameState.state === 'paused') {
-        renderPauseScreen();
-    }
-}
-
-// Render menu screen
-function renderMenu() {
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Title
-    ctx.fillStyle = '#fff';
-    const titleFontSize = isMobile ? 'bold 36px' : 'bold 64px';
-    ctx.font = `${titleFontSize} "Courier New"`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('GRAVITY CARGO', canvas.width / 2, canvas.height * 0.25);
-    
-    // Subtitle
-    ctx.font = '20px "Courier New"';
-    ctx.fillStyle = '#0ff';
-    ctx.fillText('A Retro Physics Puzzler', canvas.width / 2, canvas.height * 0.25 + 40);
-    
-    // Menu options
-    const startY = canvas.height * 0.5;
-    const spacing = Math.min(70, canvas.height * 0.15); // Scale spacing with screen height
-    const buttonWidth = Math.min(300, canvas.width * 0.8);
-    const buttonHeight = 50;
-    
-    menu.options.forEach((option, index) => {
-        const y = startY + index * spacing;
-        
-        const isSelected = index === menu.selectedOption;
-        const buttonX = canvas.width / 2 - buttonWidth / 2;
-        const buttonY = y - buttonHeight / 2;
-        
-        if (isSelected && option.enabled) {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-            ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
-        }
-        
-        ctx.strokeStyle = option.enabled ? '#fff' : '#444';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(buttonX, buttonY, buttonWidth, buttonHeight);
-        
-        ctx.font = '24px "Courier New"';
-        ctx.fillStyle = option.enabled ? '#fff' : '#444';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(option.label, canvas.width / 2, y);
-        
-        option.bounds = { x: buttonX, y: buttonY, width: buttonWidth, height: buttonHeight };
-    });
-    
-    // Footer
-    ctx.font = '12px "Courier New"';
-    ctx.fillStyle = '#666';
-    ctx.textAlign = 'center';
-    ctx.fillText('Idee: Andreas Weber | Spec: Claude Sonnet 4.5 | Code: Claude Code',
-                 canvas.width / 2, canvas.height - 20);
-}
-
-// Render level select screen
-function renderLevelSelect() {
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Title
-    ctx.fillStyle = '#fff';
-    const titleFontSize = isMobile ? 'bold 32px' : 'bold 48px';
-    ctx.font = `${titleFontSize} "Courier New"`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('LEVEL AUSWÄHLEN', canvas.width / 2, canvas.height * 0.15);
-    
-    // Get level templates
-    const levelTemplates = getLevelTemplates();
-    
-    // Initialize bounds array for touch/click detection
-    window.levelSelectBounds = [];
-    
-    // Level list
-    const startY = canvas.height * 0.3;
-    const spacing = Math.min(45, canvas.height * 0.055); // Slightly smaller for more levels
-    const buttonWidth = Math.min(350, canvas.width * 0.85);
-    const buttonHeight = 35; // Slightly smaller buttons
-    const maxVisibleLevels = Math.min(10, Math.floor((canvas.height * 0.55) / spacing)); // Allow more space
-    
-    // Calculate scroll offset to keep selected level visible
-    const totalLevels = levelTemplates.length;
-    if (levelSelectMenu.selectedLevel < levelSelectMenu.scrollOffset + 1) {
-        levelSelectMenu.scrollOffset = Math.max(0, levelSelectMenu.selectedLevel - 1);
-    } else if (levelSelectMenu.selectedLevel > levelSelectMenu.scrollOffset + maxVisibleLevels) {
-        levelSelectMenu.scrollOffset = Math.min(totalLevels - maxVisibleLevels, levelSelectMenu.selectedLevel - maxVisibleLevels);
-    }
-    
-    // Ensure scroll offset is within bounds
-    levelSelectMenu.scrollOffset = Math.max(0, Math.min(totalLevels - maxVisibleLevels, levelSelectMenu.scrollOffset));
-    
-    // Render visible levels
-    for (let i = 0; i < Math.min(maxVisibleLevels, levelTemplates.length); i++) {
-        const levelIndex = i + levelSelectMenu.scrollOffset;
-        if (levelIndex >= levelTemplates.length) break;
-        
-        const level = levelTemplates[levelIndex];
-        const y = startY + i * spacing;
-        const isSelected = (levelIndex + 1) === levelSelectMenu.selectedLevel;
-        
-        const buttonX = canvas.width / 2 - buttonWidth / 2;
-        const buttonY = y - buttonHeight / 2;
-        
-        // Highlight selected level
-        if (isSelected) {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-            ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
-        }
-        
-        // Button border
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(buttonX, buttonY, buttonWidth, buttonHeight);
-        
-        // Level text
-        ctx.font = isMobile ? '18px "Courier New"' : '22px "Courier New"';
-        ctx.fillStyle = '#fff';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        const levelText = `${level.levelNumber} - ${level.name}`;
-        ctx.fillText(levelText, canvas.width / 2, y);
-        
-        // Store bounds for touch/click detection
-        window.levelSelectBounds.push({
-            x: buttonX,
-            y: buttonY,
-            width: buttonWidth,
-            height: buttonHeight,
-            level: level.levelNumber
+        renderPauseMenuScreen({
+            ctx,
+            canvas,
+            gameState,
+            pauseMenu,
+            levelTemplates: getLevelTemplates()
         });
     }
-    
-    // Back button
-    const backY = canvas.height * 0.85;
-    const backButtonWidth = Math.min(200, canvas.width * 0.6);
-    const backButtonHeight = 50;
-    const backButtonX = canvas.width / 2 - backButtonWidth / 2;
-    const backButtonY = backY - backButtonHeight / 2;
-    
-    ctx.strokeStyle = '#888';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(backButtonX, backButtonY, backButtonWidth, backButtonHeight);
-    
-    ctx.font = '20px "Courier New"';
-    ctx.fillStyle = '#888';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('ZURÜCK', canvas.width / 2, backY);
-    
-    // Store back button bounds
-    window.levelSelectBounds.push({
-        x: backButtonX,
-        y: backButtonY,
-        width: backButtonWidth,
-        height: backButtonHeight,
-        level: -1 // Special value for back button
-    });
-    
-    // Scroll indicators
-    if (totalLevels > maxVisibleLevels) {
-        ctx.font = '14px "Courier New"';
-        ctx.fillStyle = '#666';
-        ctx.textAlign = 'center';
-        
-        if (levelSelectMenu.scrollOffset > 0) {
-            ctx.fillText('↑ Mehr Level oben', canvas.width / 2, startY - 20);
-        }
-        if (levelSelectMenu.scrollOffset + maxVisibleLevels < totalLevels) {
-            ctx.fillText('↓ Mehr Level unten', canvas.width / 2, backY - 60);
-        }
-        
-        // Show current position
-        const currentRange = `${levelSelectMenu.scrollOffset + 1}-${Math.min(levelSelectMenu.scrollOffset + maxVisibleLevels, totalLevels)} von ${totalLevels}`;
-        ctx.fillStyle = '#888';
-        ctx.fillText(currentRange, canvas.width / 2, backY - 40);
-    }
-    
-    // Instructions
-    ctx.font = isMobile ? '14px "Courier New"' : '16px "Courier New"';
-    ctx.fillStyle = '#666';
-    ctx.textAlign = 'center';
-    ctx.fillText(isMobile ? 'Tap zum Auswählen' : 'Pfeiltasten zum Scrollen, Enter zum Auswählen', 
-                 canvas.width / 2, canvas.height - 20);
-}
-
-// Render pause screen
-function renderPauseScreen() {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Title
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 64px "Courier New"';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('PAUSED', canvas.width / 2, canvas.height * 0.2);
-
-    // Level indicator to show current progress  
-    const pauseTotalLevels = getLevelTemplates().length;
-    ctx.font = '24px "Courier New"';
-    ctx.fillStyle = '#0ff';
-    ctx.fillText(`LEVEL ${gameState.level} / ${pauseTotalLevels}`, canvas.width / 2, canvas.height * 0.2 + 50);
-    ctx.fillStyle = '#fff';
-    
-    // Menu options
-    const startY = canvas.height * 0.45;
-    const spacing = Math.min(70, canvas.height * 0.15);
-    const buttonWidth = Math.min(280, canvas.width * 0.7);
-    const buttonHeight = 50;
-    
-    pauseMenu.options.forEach((option, index) => {
-        const y = startY + index * spacing;
-        
-        const isSelected = index === pauseMenu.selectedOption;
-        const buttonX = canvas.width / 2 - buttonWidth / 2;
-        const buttonY = y - buttonHeight / 2;
-        
-        if (isSelected) {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-            ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
-        }
-        
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(buttonX, buttonY, buttonWidth, buttonHeight);
-        
-        ctx.font = '22px "Courier New"';
-        ctx.fillStyle = '#fff';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(option.label, canvas.width / 2, y);
-        
-        option.bounds = { x: buttonX, y: buttonY, width: buttonWidth, height: buttonHeight };
-    });
-    
-    // Instructions
-    ctx.font = '16px "Courier New"';
-    ctx.fillStyle = '#888';
-    ctx.textAlign = 'center';
-    ctx.fillText('ESC/P zum Fortsetzen', canvas.width / 2, canvas.height - 30);
-}
-
-// Render level complete screen
-function renderLevelComplete() {
-    ctx.fillStyle = '#fff';
-    const completeFontSize = isMobile ? '32px' : '48px';
-    ctx.font = `${completeFontSize} "Courier New"`;
-    ctx.textAlign = 'center';
-    ctx.fillText('LEVEL COMPLETE!', canvas.width / 2, canvas.height * 0.45);
-
-    // Show how far the player is through the campaign
-    const completeTotalLevels = getLevelTemplates().length;
-    const completedLevel = gameState.lastCompletedLevel || Math.max(1, gameState.level - 1);
-    ctx.font = '20px "Courier New"';
-    ctx.fillStyle = '#0ff';
-    ctx.fillText(`LEVEL ${completedLevel} / ${completeTotalLevels}`, canvas.width / 2, canvas.height * 0.45 + 30);
-    ctx.fillStyle = '#fff';
-
-    let yOffset = 80;
-    
-    // Render time attack specific info
-    if (gameState.mode === 'timeattack') {
-        const result = getLastResult();
-        
-        // Current time
-        ctx.font = '24px "Courier New"';
-        ctx.fillStyle = '#fff';
-        ctx.fillText(`DEINE ZEIT: ${formatTime(result.levelTime)}`, canvas.width / 2, canvas.height * 0.45 + yOffset);
-        yOffset += 35;
-        
-        // Personal best (if exists and different)
-        if (result.personalBest && !result.isNewRecord) {
-            ctx.font = '18px "Courier New"';
-            ctx.fillStyle = '#888';
-            ctx.fillText(`BESTZEIT: ${formatTime(result.personalBest)}`, canvas.width / 2, canvas.height * 0.45 + yOffset);
-            yOffset += 25;
-        }
-        
-        // Performance message (nur wenn vorhanden)
-        if (result.message) {
-            ctx.font = '20px "Courier New"';
-            if (result.isNewRecord) {
-                ctx.fillStyle = '#0f0'; // Green for new record
-            } else if (result.message === "Nicht übel gar nicht übel") {
-                ctx.fillStyle = '#ff0'; // Yellow for close time
-            } else if (result.message.includes("% abgeschlossen")) {
-                ctx.fillStyle = '#f80'; // Orange for incomplete cargo (percentage)
-            } else {
-                ctx.fillStyle = '#f80'; // Orange for slower time
-            }
-            ctx.fillText(result.message, canvas.width / 2, canvas.height * 0.45 + yOffset);
-            yOffset += 40;
-        }
-    } else {
-        // Normal mode: show score
-        ctx.font = '24px "Courier New"';
-        ctx.fillText(`SCORE: ${gameState.score}`, canvas.width / 2, canvas.height * 0.45 + yOffset);
-        yOffset += 40;
-    }
-}
-
-// Render game over screen
-function renderGameOver() {
-    ctx.fillStyle = '#fff';
-    ctx.font = isMobile ? '36px' : '48px';
-    ctx.textAlign = 'center';
-    ctx.fillText('GAME OVER', canvas.width / 2, canvas.height * 0.3);
-    
-    ctx.font = isMobile ? '18px' : '24px';
-    ctx.fillText(`LEVEL: ${gameState.level}`, canvas.width / 2, canvas.height * 0.3 + (isMobile ? 50 : 60));
-    
-    if (gameState.mode === 'timeattack') {
-        const result = getLastResult();
-        if (result && result.levelTime) {
-            // Zeit anzeigen (immer, gleiche Position wie Success-Screen)
-            ctx.font = isMobile ? '18px' : '24px';
-            ctx.fillStyle = '#fff';
-            ctx.fillText(`DEINE ZEIT: ${formatTime(result.levelTime)}`, canvas.width / 2, canvas.height * 0.3 + (isMobile ? 120 : 140));
-            
-            let yOffset = isMobile ? 145 : 170;
-            
-            // Bestzeit und Message (conditional)
-            if (result.isFullyComplete) {
-                if (result.personalBest && !result.isNewRecord) {
-                    ctx.font = isMobile ? '14px' : '18px';
-                    ctx.fillStyle = '#888';
-                    ctx.fillText(`BESTZEIT: ${formatTime(result.personalBest)}`, canvas.width / 2, canvas.height * 0.3 + yOffset);
-                    yOffset += isMobile ? 25 : 30;
-                }
-                if (result.message) {
-                    ctx.font = isMobile ? '16px' : '20px';
-                    ctx.fillStyle = result.isNewRecord ? '#0f0' : '#ff0';
-                    ctx.fillText(result.message, canvas.width / 2, canvas.height * 0.3 + yOffset);
-                    yOffset += isMobile ? 25 : 30;
-                }
-            } else {
-                // Prozentuale Completion-Message
-                ctx.font = isMobile ? '16px' : '20px';
-                ctx.fillStyle = '#f80'; // Orange für partielle Completion
-                ctx.fillText(result.message, canvas.width / 2, canvas.height * 0.3 + yOffset);
-                yOffset += isMobile ? 25 : 30;
-            }
-            
-            // Show completed levels from current session
-            if (gameState.level > 1) {
-                const overviewData = getCompactOverviewData(gameState.level - 1);
-                const completedLevels = overviewData.levels.filter(data => data.isFullyComplete);
-                
-                if (completedLevels.length > 0) {
-                    yOffset += isMobile ? 10 : 15;
-                    ctx.font = isMobile ? '14px' : '16px';
-                    ctx.fillStyle = '#aaa';
-                    ctx.fillText('ABGESCHLOSSENE LEVEL:', canvas.width / 2, canvas.height * 0.3 + yOffset);
-                    yOffset += isMobile ? 20 : 25;
-                    
-                    // Create compact list of completed levels
-                    const levelTexts = completedLevels.map(data => 
-                        `Level ${data.number}: ${formatCompactTime(data.time)}`
-                    );
-                    
-                    // Split into lines if too many levels
-                    const maxPerLine = isMobile ? 2 : 3;
-                    for (let i = 0; i < levelTexts.length; i += maxPerLine) {
-                        const lineTexts = levelTexts.slice(i, i + maxPerLine);
-                        const lineText = lineTexts.join(', ');
-                        
-                        ctx.font = isMobile ? '12px' : '14px';
-                        ctx.fillStyle = '#0ff';
-                        ctx.fillText(lineText, canvas.width / 2, canvas.height * 0.3 + yOffset);
-                        yOffset += isMobile ? 18 : 22;
-                    }
-                }
-            }
-        }
-    } else {
-        // Normal mode: show score
-        ctx.fillText(`SCORE: ${gameState.score}`, canvas.width / 2, canvas.height * 0.3 + (isMobile ? 80 : 100));
-    }
-    
-    ctx.font = isMobile ? '16px' : '20px';
-    ctx.fillStyle = '#0ff';
-    ctx.fillText('ENTER für Hauptmenü', canvas.width / 2, canvas.height - (isMobile ? 40 : 60));
-}
-
-// Render game won screen
-function renderGameWon() {
-    // Start fireworks animation on first render
-    if (!fireworksState.active && !fireworksState.hasStarted) {
-        startFireworks();
-        fireworksState.hasStarted = true;
-    }
-    
-    // Update fireworks
-    updateFireworks();
-    
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Title - MOBILE OPTIMIERT
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 40px "Courier New"';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('GLÜCKWUNSCH!', canvas.width / 2, canvas.height / 6);
-    
-    ctx.font = '18px "Courier New"';
-    ctx.fillStyle = '#0ff';
-    ctx.fillText('ALLE LEVEL', canvas.width / 2, canvas.height / 6 + 50);
-    ctx.fillText('ABGESCHLOSSEN', canvas.width / 2, canvas.height / 6 + 72);
-    
-    if (gameState.mode === 'timeattack') {
-        // Show time attack overview for all levels
-        renderTimeAttackOverview('complete', canvas.height / 6 + 110);
-    } else {
-        // Score - MOBILE OPTIMIERT
-        const maxScore = getMaxScore();
-        const percentage = Math.round((gameState.score / maxScore) * 100);
-        const scoreY = canvas.height / 2 - 50;
-        
-        ctx.font = '28px "Courier New"';
-        ctx.fillStyle = '#fff';
-        ctx.fillText(`DEIN SCORE: ${gameState.score}`, canvas.width / 2, scoreY);
-        
-        ctx.font = '16px "Courier New"';
-        ctx.fillStyle = '#888';
-        ctx.fillText(`Maximal möglich: ${maxScore}`, canvas.width / 2, scoreY + 35);
-        
-        ctx.font = '22px "Courier New"';
-        ctx.fillStyle = percentage === 100 ? '#0f0' : '#ff0';
-        ctx.fillText(`${percentage}% erreicht`, canvas.width / 2, scoreY + 65);
-        
-        if (percentage === 100) {
-            ctx.font = '18px "Courier New"';
-            ctx.fillStyle = '#0f0';
-            ctx.fillText('★ PERFEKT ★', canvas.width / 2, scoreY + 95);
-        }
-    }
-    
-    // Credits - MOBILE OPTIMIERT
-    const creditsY = canvas.height - 180;
-    
-    ctx.font = 'bold 16px "Courier New"';
-    ctx.fillStyle = '#fff';
-    ctx.fillText('CREDITS', canvas.width / 2, creditsY);
-    
-    ctx.font = '12px "Courier New"';
-    ctx.fillStyle = '#aaa';
-    const lineHeight = 18;
-    let line = 0;
-    
-    ctx.fillText('Autor: Andreas Weber', canvas.width / 2, creditsY + 30 + (line++ * lineHeight));
-    line++; // Empty line
-    ctx.fillText('Entwickelt mit:', canvas.width / 2, creditsY + 30 + (line++ * lineHeight));
-    ctx.fillText('Claude Sonnet 4.5', canvas.width / 2, creditsY + 30 + (line++ * lineHeight));
-    ctx.fillText('Claude Code', canvas.width / 2, creditsY + 30 + (line++ * lineHeight));
-    ctx.fillText('Roo Code', canvas.width / 2, creditsY + 30 + (line++ * lineHeight));
-    
-    // Instructions - MOBILE OPTIMIERT
-    ctx.font = '14px "Courier New"';
-    ctx.fillStyle = '#0ff';
-    ctx.fillText('ENTER für Hauptmenü', canvas.width / 2, canvas.height - 30);
-    
-    // Render fireworks animation on top
-    renderFireworks();
-}
-
-// Render touch indicator for mobile
-function renderTouchIndicator() {
-    const touchState = getTouchState();
-    if (touchState.active) {
-        ctx.save();
-        ctx.setLineDash([5, 5]);
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(getShip().x, getShip().y);
-        ctx.lineTo(touchState.x, touchState.y);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.restore();
-    }
-}
-
-
-
-// Render space background with stars
-function renderSpaceBackground() {
-    // Dark space background
-    ctx.fillStyle = '#000011';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Render static stars
-    ctx.fillStyle = '#ffffff';
-    for (const star of spaceStars) {
-        ctx.globalAlpha = star.brightness;
-        ctx.fillRect(star.x, star.y, 1, 1);
-    }
-    ctx.globalAlpha = 1.0;
-}
-
-// Render asteroids for space levels
-function renderAsteroids() {
-    const activeAsteroids = asteroidManager.getActiveAsteroids();
-    
-    if (activeAsteroids.length === 0) return;
-    
-    ctx.strokeStyle = '#888';
-    ctx.fillStyle = '#444';
-    ctx.lineWidth = 1;
-    
-    for (const asteroid of activeAsteroids) {
-        ctx.save();
-        ctx.translate(asteroid.x, asteroid.y);
-        
-        // Draw irregular asteroid polygon
-        ctx.beginPath();
-        for (let i = 0; i < asteroid.shape.length; i++) {
-            const point = asteroid.shape[i];
-            if (i === 0) {
-                ctx.moveTo(point.x, point.y);
-            } else {
-                ctx.lineTo(point.x, point.y);
-            }
-        }
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-        
-        ctx.restore();
-    }
-}
-
-// Render time attack overview for end screens
-function renderTimeAttackOverview(mode, startY) {
-    const maxLevel = mode === 'partial' ? gameState.level - 1 : null;
-    const overviewData = getCompactOverviewData(maxLevel);
-    
-    if (overviewData.levels.length === 0) {
-        // Show fallback message for no data
-        ctx.save();
-        ctx.textAlign = 'center';
-        ctx.font = isMobile ? '14px' : '16px';
-        ctx.fillStyle = '#888';
-        ctx.fillText('Keine Zeitdaten verfügbar', canvas.width / 2, startY + 40);
-        ctx.restore();
-        return;
-    }
-    
-    ctx.save();
-    ctx.textAlign = 'center';
-    
-    // Title
-    ctx.font = isMobile ? '14px' : '16px';
-    ctx.fillStyle = '#0ff';
-    const title = mode === 'partial' ? 'ERREICHTE ZEITEN' : 'ZEITÜBERSICHT';
-    ctx.fillText(title, canvas.width / 2, startY);
-    
-    // Calculate responsive grid layout
-    const levelsPerRow = isMobile ? 2 : Math.min(4, overviewData.levels.length);
-    const rows = Math.ceil(overviewData.levels.length / levelsPerRow);
-    const rowHeight = isMobile ? 18 : 20;
-    const gridStartY = startY + 25;
-    
-    // Adjust for very small mobile screens
-    const isVerySmallScreen = isMobile && canvas.height < 600;
-    const adjustedRowHeight = isVerySmallScreen ? 16 : rowHeight;
-    const adjustedFontSize = isVerySmallScreen ? '12px' : (isMobile ? '13px' : '15px');
-    
-    // Draw semi-transparent background box
-    const boxPadding = 15;
-    const boxHeight = rows * adjustedRowHeight + 50; // Extra space for summary
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-    ctx.fillRect(
-        canvas.width * 0.05, 
-        gridStartY - 10, 
-        canvas.width * 0.9, 
-        boxHeight
-    );
-    
-    // Render level times in grid
-    ctx.font = adjustedFontSize;
-    ctx.textAlign = 'left';
-    
-    for (let i = 0; i < overviewData.levels.length; i++) {
-        const level = overviewData.levels[i];
-        const row = Math.floor(i / levelsPerRow);
-        const col = i % levelsPerRow;
-        
-        // Calculate position with better spacing
-        const gridWidth = canvas.width * 0.8;
-        const cellWidth = gridWidth / levelsPerRow;
-        const x = (canvas.width - gridWidth) / 2 + col * cellWidth;
-        const y = gridStartY + row * adjustedRowHeight;
-        
-        // Render level entry
-        const levelText = `L${level.number}: ${level.formatted}`;
-        
-        // Completion-Display für partielle Completions
-        const completionDisplay = level.completionPercentage < 100 
-            ? `(${level.completionPercentage}%)` 
-            : '';
-        
-        // Marker für Session-Records (nur bei 100%)
-        const marker = level.isSessionRecord && level.isFullyComplete ? '*' : '';
-        
-        const displayText = levelText + completionDisplay + marker;
-        
-        // Farbkodierung
-        if (level.isSessionRecord && level.isFullyComplete) {
-            ctx.fillStyle = '#0f0'; // Grün für echte Rekorde
-        } else if (!level.isFullyComplete) {
-            ctx.fillStyle = '#f80'; // Orange für partielle Completion
-        } else {
-            ctx.fillStyle = '#fff'; // Weiß für normale vollständige Zeiten
-        }
-        
-        ctx.fillText(displayText, x, y);
-    }
-    
-    // Summary line
-    const summaryY = gridStartY + rows * adjustedRowHeight + 20;
-    ctx.textAlign = 'center';
-    ctx.font = adjustedFontSize;
-    
-    let summaryText = `${overviewData.summary.totalLevels} Level`;
-    if (overviewData.summary.sessionRecords > 0) {
-        summaryText += ` | ${overviewData.summary.sessionRecords} Rekorde *`;
-    }
-    summaryText += ` | ${overviewData.summary.formattedTotal}`;
-    
-    ctx.fillStyle = '#ff0';
-    ctx.fillText(summaryText, canvas.width / 2, summaryY);
-    
-    ctx.restore();
-}
-
-// Shared HUD text styling to avoid redundant Canvas state operations
-function setHUDTextStyle() {
-    ctx.shadowColor = '#000';
-    ctx.shadowBlur = 4;
-    ctx.shadowOffsetX = 2;
-    ctx.shadowOffsetY = 2;
-    ctx.font = `bold ${isMobile ? '18px' : '20px'} "Courier New", monospace`;
-    ctx.textBaseline = 'top';
-}
-
-// Performance tracking for HUD elements
-let lastRenderedScore = -1;
-let scoreNeedsUpdate = true;
-let lastScoreText = '';
-
-// Timer string caching to reduce memory allocation
-const timerStringCache = new Map();
-let lastCacheCleared = 0;
-
-function getCachedTimerString(time, isOvertime, symbol) {
-    const key = `${Math.round(time * 10)}-${isOvertime}-${symbol}`;
-    
-    if (!timerStringCache.has(key)) {
-        const formattedTime = formatTime(time);
-        const timerText = isOvertime ? `${symbol} +${formattedTime}` : `${symbol} ${formattedTime}`;
-        timerStringCache.set(key, timerText);
-        
-        // Clear cache periodically to prevent memory growth
-        const now = Date.now();
-        if (now - lastCacheCleared > 30000 && timerStringCache.size > 50) { // Every 30 seconds
-            timerStringCache.clear();
-            lastCacheCleared = now;
-        }
-    }
-    
-    return timerStringCache.get(key);
-}
-
-// Unicode symbol with fallback detection
-function getStopwatchSymbol() {
-    // Use ASCII fallback for better compatibility across devices
-    return '⏱'; // Unicode with '[T]' as mental fallback if issues arise
-}
-
-// Render timer on canvas for time attack mode
-function renderCanvasTimer() {
-    const displayTime = getDisplayTime();
-    const stopwatchSymbol = getStopwatchSymbol();
-    
-    // Use cached timer string to reduce memory allocation
-    const timerText = getCachedTimerString(displayTime, isOvertime(), stopwatchSymbol);
-    
-    // Determine color based on timer state
-    let timerColor = '#fff'; // Default stopwatch color (white)
-    if (isOvertime()) {
-        timerColor = '#f00'; // Overtime color (red)
-    } else if (isCountdownMode()) {
-        timerColor = '#ff0'; // Countdown color (yellow)
-    }
-    
-    const { timerX, timerY } = getGameplayHUDLayout();
-    
-    // Use shared HUD text style
-    ctx.fillStyle = timerColor;
-    ctx.textAlign = 'right';
-    
-    // Render timer text
-    ctx.fillText(timerText, timerX, timerY);
-    
-    // Add blinking effect for overtime (matching CSS animation)
-    if (isOvertime()) {
-        const blinkCycle = (Date.now() % 1000) / 1000; // 1 second cycle
-        if (blinkCycle > 0.5) {
-            ctx.globalAlpha = 0.3;
-            ctx.fillText(timerText, timerX, timerY);
-            ctx.globalAlpha = 1.0;
-        }
-    }
-}
-
-// Render score on canvas during gameplay (with string caching optimization)
-function renderCanvasScore() {
-    const { scoreX, scoreY } = getGameplayHUDLayout();
-    
-    // Optimization: Only format string when score actually changes
-    let scoreText = lastScoreText;
-    if (gameState.score !== lastRenderedScore || scoreNeedsUpdate) {
-        lastRenderedScore = gameState.score;
-        scoreNeedsUpdate = false;
-        scoreText = `SCORE: ${gameState.score}`;
-        lastScoreText = scoreText; // Cache the formatted string
-    }
-    
-    // Always render score text (canvas is cleared every frame)
-    ctx.fillStyle = '#fff'; // White color for score
-    ctx.textAlign = 'left';
-    ctx.fillText(scoreText, scoreX, scoreY);
 }
