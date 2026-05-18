@@ -2,7 +2,7 @@
 // Handles ship movement, physics, and input processing
 
 import { gameState } from './game-state.js';
-import { isMobile } from './ui.js';
+import { isMobile } from './device-detection.js';
 import { PHYSICS } from './config.js?v=12';
 import { playSound } from './audio.js?v=12';
 
