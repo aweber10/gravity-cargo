@@ -7,6 +7,13 @@ import { getWalls, getPlatforms, getMaxScore, getLevelTemplates, getCurrentLevel
 import { isMobile, menu, pauseMenu, levelSelectMenu } from './ui.js';
 import { asteroidManager } from './asteroid-manager.js';
 import { getDisplayTime, isCountdownMode, isOvertime, formatTime, formatCompactTime, getLastResult, getCompactOverviewData } from './time-attack.js';
+import {
+    createDOMHUDLayout,
+    createGameplayHUDLayout,
+    createLevelScreenRect,
+    shouldRenderGameplayHUD,
+    shouldRenderTimeAttackTimer
+} from './renderer-layout.js';
 
 // Canvas setup
 const canvas = document.getElementById('gameCanvas');
@@ -187,15 +194,7 @@ export function getContext() {
 }
 
 function getGameplayHUDLayout() {
-    const bounds = getLevelBounds();
-    const margin = isMobile ? 25 : 30;
-
-    return {
-        scoreX: bounds.left + margin,
-        scoreY: bounds.top + margin,
-        timerX: bounds.right - margin,
-        timerY: bounds.top + margin
-    };
+    return createGameplayHUDLayout(getLevelBounds(), isMobile);
 }
 
 function getLevelScreenRect() {
@@ -203,17 +202,10 @@ function getLevelScreenRect() {
     const canvasRect = canvas.getBoundingClientRect();
     const container = document.getElementById('game-container');
     const containerRect = container ? container.getBoundingClientRect() : { left: 0, top: 0 };
-    const scaleX = canvasRect.width / canvas.width;
-    const scaleY = canvasRect.height / canvas.height;
-
-    return {
-        left: canvasRect.left - containerRect.left + bounds.left * scaleX,
-        top: canvasRect.top - containerRect.top + bounds.top * scaleY,
-        right: canvasRect.left - containerRect.left + bounds.right * scaleX,
-        bottom: canvasRect.top - containerRect.top + bounds.bottom * scaleY,
-        width: bounds.width * scaleX,
-        height: bounds.height * scaleY
-    };
+    return createLevelScreenRect(bounds, canvasRect, containerRect, {
+        width: canvas.width,
+        height: canvas.height
+    });
 }
 
 function updateDOMHUDLayout() {
@@ -221,7 +213,7 @@ function updateDOMHUDLayout() {
     const bottomBar = document.getElementById('bottom-bar');
     if (!topBar && !bottomBar) return;
 
-    const showGameplayHUD = gameState.state === 'playing';
+    const showGameplayHUD = shouldRenderGameplayHUD(gameState);
     if (topBar) {
         topBar.style.display = showGameplayHUD ? 'flex' : 'none';
     }
@@ -231,29 +223,21 @@ function updateDOMHUDLayout() {
     if (!showGameplayHUD) return;
 
     const rect = getLevelScreenRect();
-    const margin = isMobile ? 20 : 30;
-    const gap = isMobile ? 8 : 12;
-    const fallbackTopOffset = isMobile ? 56 : 62;
-    const bottomHudHeight = isMobile ? 34 : 42;
-    const left = rect.left + margin;
-    const right = window.innerWidth - rect.right + margin;
-    const spaceBelowLevel = window.innerHeight - rect.bottom;
+    const domHUDLayout = createDOMHUDLayout(rect, {
+        width: window.innerWidth,
+        height: window.innerHeight
+    }, isMobile);
 
     if (topBar) {
-        topBar.style.left = `${left}px`;
-        topBar.style.right = `${right}px`;
+        topBar.style.left = `${domHUDLayout.left}px`;
+        topBar.style.right = `${domHUDLayout.right}px`;
     }
 
     if (bottomBar) {
-        bottomBar.style.left = `${left}px`;
-        bottomBar.style.right = `${right}px`;
-        bottomBar.style.bottom = 'auto';
-
-        if (spaceBelowLevel >= bottomHudHeight + gap) {
-            bottomBar.style.top = `${rect.bottom + gap}px`;
-        } else {
-            bottomBar.style.top = `${rect.top + fallbackTopOffset}px`;
-        }
+        bottomBar.style.left = `${domHUDLayout.left}px`;
+        bottomBar.style.right = `${domHUDLayout.right}px`;
+        bottomBar.style.bottom = domHUDLayout.bottom;
+        bottomBar.style.top = `${domHUDLayout.top}px`;
     }
 }
 
@@ -262,42 +246,66 @@ export function render() {
     const currentLevel = getCurrentLevel();
     const isSpaceLevel = currentLevel && currentLevel.backgroundType === 'space';
     updateDOMHUDLayout();
-    
-    // Render background (space or normal)
+
+    renderBackgroundForCurrentLevel(isSpaceLevel);
+    if (renderBlockingScreenIfNeeded()) return;
+
+    renderLevelScene(isSpaceLevel);
+    renderPauseOverlayIfNeeded();
+}
+
+function renderBackgroundForCurrentLevel(isSpaceLevel) {
     if (isSpaceLevel) {
         renderSpaceBackground();
     } else {
         ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
-    
+}
+
+function renderBlockingScreenIfNeeded() {
     if (gameState.state === 'menu') {
         renderMenu();
-        return;
+        return true;
     }
-    
+
     if (gameState.state === 'levelselect' && isShowLevelSelect()) {
         renderLevelSelect();
-        return;
+        return true;
     }
-    
+
     if (gameState.state === 'gamewon') {
         renderGameWon();
-        return;
+        return true;
     }
-    
+
     if (gameState.state === 'levelcomplete') {
         renderLevelComplete();
-        return;
+        return true;
     }
-    
+
     if (gameState.state === 'gameover') {
         renderGameOver();
-        return;
+        return true;
     }
-    
+
+    return false;
+}
+
+function renderLevelScene(isSpaceLevel) {
     ctx.save();
-    
+
+    renderWalls(isSpaceLevel);
+    renderAsteroidsIfNeeded(isSpaceLevel);
+    renderPlatforms();
+    renderShipIfVisible();
+    renderParticles();
+    renderGameplayOverlay();
+
+    ctx.restore();
+}
+
+function renderWalls(isSpaceLevel) {
     // Render walls
     const walls = getWalls();
     for (const wall of walls) {
@@ -310,12 +318,15 @@ export function render() {
         ctx.closePath();
         ctx.fill();
     }
-    
-    // Render asteroids (for space levels)
+}
+
+function renderAsteroidsIfNeeded(isSpaceLevel) {
     if (isSpaceLevel) {
         renderAsteroids();
     }
-    
+}
+
+function renderPlatforms() {
     // Render platforms
     const platforms = getPlatforms();
     for (const platform of platforms) {
@@ -341,7 +352,9 @@ export function render() {
             );
         }
     }
-    
+}
+
+function renderShipIfVisible() {
     // Render ship (except during explosion)
     if (gameState.state !== 'exploding') {
         ctx.save();
@@ -373,7 +386,9 @@ export function render() {
         
         ctx.restore();
     }
-    
+}
+
+function renderParticles() {
     // Render particles
     for (const particle of gameState.particles) {
         ctx.fillStyle = particle.color;
@@ -383,9 +398,11 @@ export function render() {
         ctx.fill();
     }
     ctx.globalAlpha = 1.0;
-    
+}
+
+function renderGameplayOverlay() {
     // Render HUD elements during gameplay
-    if (gameState.state === 'playing') {
+    if (shouldRenderGameplayHUD(gameState)) {
         // Set shared HUD text style once per frame for both score and timer
         ctx.save();
         setHUDTextStyle();
@@ -394,7 +411,7 @@ export function render() {
         renderCanvasScore();
         
         // Render timer for time attack mode (with string caching)
-        if (gameState.mode === 'timeattack') {
+        if (shouldRenderTimeAttackTimer(gameState)) {
             renderCanvasTimer();
         }
         
@@ -403,9 +420,9 @@ export function render() {
         // Render touch indicator
         renderTouchIndicator();
     }
-    
-    ctx.restore();
-    
+}
+
+function renderPauseOverlayIfNeeded() {
     // Render pause screen
     if (gameState.state === 'paused') {
         renderPauseScreen();

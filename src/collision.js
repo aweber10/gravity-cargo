@@ -49,20 +49,8 @@ export function checkCollisions() {
     // Check platform collisions
     const platforms = getPlatforms();
     for (const platform of platforms) {
-        const px = platform.position[0];
-        const py = platform.position[1];
-        const pw = platform.width;
-        
-        if (ship.x > px && ship.x < px + pw && 
-            ship.y > py - ship.size && ship.y < py + 5) {
-            
-            const normalizedAngle = ((ship.angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
-            const isUpright = normalizedAngle < PHYSICS.maxLandingAngle || 
-                            normalizedAngle > Math.PI * 2 - PHYSICS.maxLandingAngle;
-            
-            const speed = Math.sqrt(ship.vx * ship.vx + ship.vy * ship.vy);
-            
-            if (isUpright && speed < PHYSICS.maxLandingSpeed) {
+        if (isShipTouchingPlatform(ship, platform)) {
+            if (canShipLand(ship)) {
                 land(platform);
             } else {
                 explode();
@@ -90,6 +78,33 @@ function checkAsteroidCollisions(ship) {
     return false;
 }
 
+function isShipTouchingPlatform(ship, platform) {
+    const px = platform.position[0];
+    const py = platform.position[1];
+    const pw = platform.width;
+
+    return ship.x > px && ship.x < px + pw &&
+        ship.y > py - ship.size && ship.y < py + 5;
+}
+
+function canShipLand(ship) {
+    return isShipUprightForLanding(ship) && getShipSpeed(ship) < PHYSICS.maxLandingSpeed;
+}
+
+function isShipUprightForLanding(ship) {
+    const normalizedAngle = normalizeFullRotation(ship.angle);
+    return normalizedAngle < PHYSICS.maxLandingAngle ||
+        normalizedAngle > Math.PI * 2 - PHYSICS.maxLandingAngle;
+}
+
+function getShipSpeed(ship) {
+    return Math.sqrt(ship.vx * ship.vx + ship.vy * ship.vy);
+}
+
+function normalizeFullRotation(angle) {
+    return ((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+}
+
 // Check if a point is inside a polygon
 function polygonContainsPoint(points, x, y) {
     let inside = false;
@@ -114,13 +129,7 @@ export function land(platform) {
     playSound('land');
     
     // Activate settling if the ship isn't perfectly upright
-    const normalizedAngle = ((ship.angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
-    let angleFromVertical = normalizedAngle;
-    if (angleFromVertical > Math.PI) {
-        angleFromVertical = Math.PI * 2 - angleFromVertical;
-    }
-    
-    if (angleFromVertical > PHYSICS.settlingMinAngle) {
+    if (shouldShipSettle(ship)) {
         ship.settling = true;
     }
     
@@ -141,6 +150,15 @@ export function land(platform) {
     }
 }
 
+function shouldShipSettle(ship) {
+    return getAngleFromVertical(ship.angle) > PHYSICS.settlingMinAngle;
+}
+
+function getAngleFromVertical(angle) {
+    const normalizedAngle = normalizeFullRotation(angle);
+    return normalizedAngle > Math.PI ? Math.PI * 2 - normalizedAngle : normalizedAngle;
+}
+
 // Handle ship explosion
 export function explode() {
     playSound('explosion');
@@ -157,13 +175,7 @@ export function explode() {
             gameState.lives--;
             if (gameState.lives <= 0) {
                 // Time Attack Evaluation bei Game Over
-                if (gameState.mode === 'timeattack') {
-                    const levelTime = stopLevelTimer();
-                    if (levelTime !== null) {
-                        const completionPercentage = calculateCompletionPercentage();
-                        evaluateTime(levelTime, gameState.level, completionPercentage);
-                    }
-                }
+                finishTimeAttackRunIfNeeded();
                 gameState.state = 'gameover';
             } else {
                 respawn();
@@ -225,13 +237,7 @@ function calculateCompletionPercentage() {
 // Handle level completion
 function levelComplete() {
     // Handle time attack timer
-    if (gameState.mode === 'timeattack') {
-        const levelTime = stopLevelTimer();
-        if (levelTime !== null) {
-            const completionPercentage = calculateCompletionPercentage();
-            evaluateTime(levelTime, gameState.level, completionPercentage);
-        }
-    }
+    finishTimeAttackRunIfNeeded();
     
     if (gameState.trainingMode) {
         // In training mode: direct return to main menu
@@ -284,4 +290,14 @@ function levelComplete() {
             }
         }
     }, 3000);
+}
+
+function finishTimeAttackRunIfNeeded() {
+    if (gameState.mode !== 'timeattack') return;
+
+    const levelTime = stopLevelTimer();
+    if (levelTime === null) return;
+
+    const completionPercentage = calculateCompletionPercentage();
+    evaluateTime(levelTime, gameState.level, completionPercentage);
 }

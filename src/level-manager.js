@@ -8,6 +8,7 @@ import { levelTemplates as mobileLevels, calculateMaxScore as calculateMobileMax
 import { playSound } from './audio.js?v=12';
 import { isMobile } from "./device-detection.js";
 import { asteroidManager } from './asteroid-manager.js';
+import { calculateLevelBounds } from './level-bounds.js';
 
 // Select appropriate level templates based on device
 const levelTemplates = isMobile ? mobileLevels : desktopLevels;
@@ -26,47 +27,7 @@ export function getCurrentLevel() {
 }
 
 export function getLevelBounds() {
-    const fallbackWidth = isMobile ? 375 : 800;
-    const fallbackHeight = isMobile ? 667 : 600;
-
-    if (!currentLevel || !currentLevel.walls || currentLevel.walls.length === 0) {
-        return {
-            left: 0,
-            top: 0,
-            right: fallbackWidth,
-            bottom: fallbackHeight,
-            width: fallbackWidth,
-            height: fallbackHeight
-        };
-    }
-
-    const points = currentLevel.walls.flatMap(wall => wall.points || []);
-    if (points.length === 0) {
-        return {
-            left: 0,
-            top: 0,
-            right: fallbackWidth,
-            bottom: fallbackHeight,
-            width: fallbackWidth,
-            height: fallbackHeight
-        };
-    }
-
-    const xs = points.map(point => point[0]);
-    const ys = points.map(point => point[1]);
-    const left = Math.min(...xs);
-    const top = Math.min(...ys);
-    const right = Math.max(...xs);
-    const bottom = Math.max(...ys);
-
-    return {
-        left,
-        top,
-        right,
-        bottom,
-        width: right - left,
-        height: bottom - top
-    };
+    return calculateLevelBounds(currentLevel, isMobile);
 }
 
 export function getLevelTemplates() {
