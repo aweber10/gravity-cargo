@@ -44,7 +44,7 @@ body {
     top: 20px;
     left: 20px;
     right: 20px;
-    display: flex;
+    display: none;
     justify-content: center;
     align-items: center;
 }
@@ -97,7 +97,7 @@ body {
     bottom: 20px;
     left: 20px;
     right: 20px;
-    display: flex;
+    display: none;
     gap: 20px;
     align-items: center;
 }

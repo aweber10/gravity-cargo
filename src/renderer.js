@@ -3,7 +3,7 @@
 
 import { gameState, isShowLevelSelect } from './game-state.js';
 import { getShip, getTouchState } from './ship-physics.js';
-import { getWalls, getPlatforms, getMaxScore, getLevelTemplates, getCurrentLevel } from './level-manager.js';
+import { getWalls, getPlatforms, getMaxScore, getLevelTemplates, getCurrentLevel, getLevelBounds } from './level-manager.js';
 import { isMobile, menu, pauseMenu, levelSelectMenu } from './ui.js';
 import { asteroidManager } from './asteroid-manager.js';
 import { getDisplayTime, isCountdownMode, isOvertime, formatTime, formatCompactTime, getLastResult, getCompactOverviewData } from './time-attack.js';
@@ -166,6 +166,8 @@ export function resizeCanvas() {
             canvas.height = maxWidth / aspectRatio;
         }
     }
+
+    updateDOMHUDLayout();
 }
 
 // Initialize canvas
@@ -184,10 +186,82 @@ export function getContext() {
     return ctx;
 }
 
+function getGameplayHUDLayout() {
+    const bounds = getLevelBounds();
+    const margin = isMobile ? 25 : 30;
+
+    return {
+        scoreX: bounds.left + margin,
+        scoreY: bounds.top + margin,
+        timerX: bounds.right - margin,
+        timerY: bounds.top + margin
+    };
+}
+
+function getLevelScreenRect() {
+    const bounds = getLevelBounds();
+    const canvasRect = canvas.getBoundingClientRect();
+    const container = document.getElementById('game-container');
+    const containerRect = container ? container.getBoundingClientRect() : { left: 0, top: 0 };
+    const scaleX = canvasRect.width / canvas.width;
+    const scaleY = canvasRect.height / canvas.height;
+
+    return {
+        left: canvasRect.left - containerRect.left + bounds.left * scaleX,
+        top: canvasRect.top - containerRect.top + bounds.top * scaleY,
+        right: canvasRect.left - containerRect.left + bounds.right * scaleX,
+        bottom: canvasRect.top - containerRect.top + bounds.bottom * scaleY,
+        width: bounds.width * scaleX,
+        height: bounds.height * scaleY
+    };
+}
+
+function updateDOMHUDLayout() {
+    const topBar = document.getElementById('top-bar');
+    const bottomBar = document.getElementById('bottom-bar');
+    if (!topBar && !bottomBar) return;
+
+    const showGameplayHUD = gameState.state === 'playing';
+    if (topBar) {
+        topBar.style.display = showGameplayHUD ? 'flex' : 'none';
+    }
+    if (bottomBar) {
+        bottomBar.style.display = showGameplayHUD ? 'flex' : 'none';
+    }
+    if (!showGameplayHUD) return;
+
+    const rect = getLevelScreenRect();
+    const margin = isMobile ? 20 : 30;
+    const gap = isMobile ? 8 : 12;
+    const fallbackTopOffset = isMobile ? 56 : 62;
+    const bottomHudHeight = isMobile ? 34 : 42;
+    const left = rect.left + margin;
+    const right = window.innerWidth - rect.right + margin;
+    const spaceBelowLevel = window.innerHeight - rect.bottom;
+
+    if (topBar) {
+        topBar.style.left = `${left}px`;
+        topBar.style.right = `${right}px`;
+    }
+
+    if (bottomBar) {
+        bottomBar.style.left = `${left}px`;
+        bottomBar.style.right = `${right}px`;
+        bottomBar.style.bottom = 'auto';
+
+        if (spaceBelowLevel >= bottomHudHeight + gap) {
+            bottomBar.style.top = `${rect.bottom + gap}px`;
+        } else {
+            bottomBar.style.top = `${rect.top + fallbackTopOffset}px`;
+        }
+    }
+}
+
 // Render game elements
 export function render() {
     const currentLevel = getCurrentLevel();
     const isSpaceLevel = currentLevel && currentLevel.backgroundType === 'space';
+    updateDOMHUDLayout();
     
     // Render background (space or normal)
     if (isSpaceLevel) {
@@ -1037,10 +1111,7 @@ function renderCanvasTimer() {
         timerColor = '#ff0'; // Countdown color (yellow)
     }
     
-    // Position timer further left to avoid level frame overlap (355-375px)
-    // Increased offset to provide safe clearance for all timer lengths including overtime
-    const timerX = isMobile ? canvas.width - 70 : canvas.width - 100;
-    const timerY = isMobile ? 25 : 30; // Match score position
+    const { timerX, timerY } = getGameplayHUDLayout();
     
     // Use shared HUD text style
     ctx.fillStyle = timerColor;
@@ -1062,9 +1133,7 @@ function renderCanvasTimer() {
 
 // Render score on canvas during gameplay (with string caching optimization)
 function renderCanvasScore() {
-    // Position score in top-left with proper margin
-    const scoreX = isMobile ? 25 : 30;
-    const scoreY = isMobile ? 25 : 30;
+    const { scoreX, scoreY } = getGameplayHUDLayout();
     
     // Optimization: Only format string when score actually changes
     let scoreText = lastScoreText;
