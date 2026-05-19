@@ -25,6 +25,7 @@ export function getLevelSelectOptionAtPosition(x, y) {
 function getOptionIndexAtPosition(options, x, y) {
     for (let i = 0; i < options.length; i++) {
         const option = options[i];
+        if (option.visible === false) continue;
         if (option.bounds && isPointInsideBounds(x, y, option.bounds)) {
             return i;
         }

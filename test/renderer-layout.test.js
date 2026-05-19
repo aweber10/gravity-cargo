@@ -68,7 +68,8 @@ test('DOM HUD layout places fuel below the level when space is available', () =>
         left: 30,
         right: 510,
         bottom: 'auto',
-        top: 612
+        top: 612,
+        placement: 'below-level'
     });
 });
 
@@ -83,6 +84,7 @@ test('DOM HUD layout falls back above lower platforms when space is tight', () =
         left: 20,
         right: 20,
         bottom: 'auto',
-        top: 56
+        top: 56,
+        placement: 'inside-top'
     });
 });

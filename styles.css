@@ -100,6 +100,17 @@ body {
     display: none;
     gap: 20px;
     align-items: center;
+    opacity: 1;
+    transition: opacity 0.15s ease;
+}
+
+#bottom-bar.hud-inside-playfield {
+    gap: 10px;
+    opacity: 0.72;
+}
+
+#bottom-bar.hud-inside-playfield.ship-near-hud {
+    opacity: 0.18;
 }
 
 #fuel-container {
@@ -108,6 +119,11 @@ body {
     background: #222;
     border: 2px solid #fff;
     position: relative;
+}
+
+#bottom-bar.hud-inside-playfield #fuel-container {
+    height: 16px;
+    border-width: 1px;
 }
 
 #fuel-bar {
@@ -128,6 +144,11 @@ body {
     font-size: 20px;
     letter-spacing: 1px;
     min-width: 150px;
+}
+
+#bottom-bar.hud-inside-playfield #target-platform {
+    font-size: 16px;
+    min-width: 110px;
 }
 
 

@@ -19,15 +19,21 @@ export function renderMenu({ ctx, canvas, isMobile, menu }) {
     ctx.fillText('A Retro Physics Puzzler', canvas.width / 2, canvas.height * 0.25 + 40);
 
     // Menu options
-    const startY = canvas.height * 0.5;
-    const spacing = Math.min(70, canvas.height * 0.15); // Scale spacing with screen height
+    const visibleOptions = menu.options.filter(isVisibleOption);
+    const startY = canvas.height * (isMobile ? 0.43 : 0.5);
+    const spacing = Math.min(isMobile ? 62 : 70, canvas.height * (isMobile ? 0.11 : 0.15));
     const buttonWidth = Math.min(300, canvas.width * 0.8);
     const buttonHeight = 50;
 
-    menu.options.forEach((option, index) => {
-        const y = startY + index * spacing;
+    menu.options.forEach(option => {
+        option.bounds = null;
+    });
 
-        const isSelected = index === menu.selectedOption;
+    visibleOptions.forEach((option, visibleIndex) => {
+        const optionIndex = menu.options.indexOf(option);
+        const y = startY + visibleIndex * spacing;
+
+        const isSelected = optionIndex === menu.selectedOption;
         const buttonX = canvas.width / 2 - buttonWidth / 2;
         const buttonY = y - buttonHeight / 2;
 
@@ -55,6 +61,10 @@ export function renderMenu({ ctx, canvas, isMobile, menu }) {
     ctx.textAlign = 'center';
     ctx.fillText('Idee: Andreas Weber | Spec: Claude Sonnet 4.5 | Code: Claude Code',
         canvas.width / 2, canvas.height - 20);
+}
+
+function isVisibleOption(option) {
+    return option.visible !== false;
 }
 
 export function renderLevelSelect({ ctx, canvas, isMobile, levelSelectMenu, levelTemplates }) {
@@ -195,11 +205,14 @@ export function renderPauseScreen({ ctx, canvas, gameState, pauseMenu, levelTemp
     ctx.textBaseline = 'middle';
     ctx.fillText('PAUSED', canvas.width / 2, canvas.height * 0.2);
 
-    // Level indicator to show current progress
-    const pauseTotalLevels = levelTemplates.length;
     ctx.font = '24px "Courier New"';
     ctx.fillStyle = '#0ff';
-    ctx.fillText(`LEVEL ${gameState.level} / ${pauseTotalLevels}`, canvas.width / 2, canvas.height * 0.2 + 50);
+    if (gameState.mode === 'scoreattack') {
+        ctx.fillText(`PUNKTE: ${gameState.score}`, canvas.width / 2, canvas.height * 0.2 + 50);
+    } else {
+        const pauseTotalLevels = levelTemplates.length;
+        ctx.fillText(`LEVEL ${gameState.level} / ${pauseTotalLevels}`, canvas.width / 2, canvas.height * 0.2 + 50);
+    }
     ctx.fillStyle = '#fff';
 
     // Menu options
@@ -208,10 +221,21 @@ export function renderPauseScreen({ ctx, canvas, gameState, pauseMenu, levelTemp
     const buttonWidth = Math.min(280, canvas.width * 0.7);
     const buttonHeight = 50;
 
-    pauseMenu.options.forEach((option, index) => {
-        const y = startY + index * spacing;
+    pauseMenu.options.forEach(option => {
+        option.bounds = null;
+        option.visible = option.id !== 'restart' || gameState.mode !== 'scoreattack';
+    });
 
-        const isSelected = index === pauseMenu.selectedOption;
+    const visibleOptions = pauseMenu.options.filter(isVisibleOption);
+    if (!visibleOptions.includes(pauseMenu.options[pauseMenu.selectedOption])) {
+        pauseMenu.selectedOption = pauseMenu.options.indexOf(visibleOptions[0]);
+    }
+
+    visibleOptions.forEach((option, visibleIndex) => {
+        const optionIndex = pauseMenu.options.indexOf(option);
+        const y = startY + visibleIndex * spacing;
+
+        const isSelected = optionIndex === pauseMenu.selectedOption;
         const buttonX = canvas.width / 2 - buttonWidth / 2;
         const buttonY = y - buttonHeight / 2;
 
