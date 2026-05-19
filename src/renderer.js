@@ -47,6 +47,26 @@ export function triggerScoreUpdate() {
 // Generate static star field for space levels
 let spaceStars = [];
 
+const hudElements = {
+    topBar: null,
+    bottomBar: null,
+    container: null
+};
+
+let domHUDLayoutDirty = true;
+let lastDOMHUDLayout = {
+    visible: null,
+    left: null,
+    right: null,
+    top: null,
+    bottom: null
+};
+let lastRenderedState = null;
+let lastRenderedLevel = null;
+let lastCanvasWidth = 0;
+let lastCanvasHeight = 0;
+let canvasEventsRegistered = false;
+
 // Resize canvas based on device
 export function resizeCanvas() {
     if (isMobile) {
@@ -66,14 +86,20 @@ export function resizeCanvas() {
         }
     }
 
-    updateDOMHUDLayout();
+    markDOMHUDLayoutDirty();
+    updateDOMHUDLayoutIfNeeded();
 }
 
 // Initialize canvas
 export function initCanvas() {
+    cacheDOMHUDElements();
     resizeCanvas();
     spaceStars = generateSpaceStars(isMobile);
-    window.addEventListener('resize', resizeCanvas);
+    if (!canvasEventsRegistered) {
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('orientationchange', markDOMHUDLayoutDirty);
+        canvasEventsRegistered = true;
+    }
 }
 
 // Get canvas context
@@ -92,27 +118,69 @@ function getGameplayHUDLayout() {
 function getLevelScreenRect() {
     const bounds = getLevelBounds();
     const canvasRect = canvas.getBoundingClientRect();
-    const container = document.getElementById('game-container');
-    const containerRect = container ? container.getBoundingClientRect() : { left: 0, top: 0 };
+    const containerRect = hudElements.container
+        ? hudElements.container.getBoundingClientRect()
+        : { left: 0, top: 0 };
     return createLevelScreenRect(bounds, canvasRect, containerRect, {
         width: canvas.width,
         height: canvas.height
     });
 }
 
+function cacheDOMHUDElements() {
+    hudElements.topBar = document.getElementById('top-bar');
+    hudElements.bottomBar = document.getElementById('bottom-bar');
+    hudElements.container = document.getElementById('game-container');
+}
+
+function markDOMHUDLayoutDirty() {
+    domHUDLayoutDirty = true;
+}
+
+function setStyleIfChanged(element, property, value) {
+    if (element.style[property] !== value) {
+        element.style[property] = value;
+    }
+}
+
+function updateDOMHUDVisibility(topBar, bottomBar, visible) {
+    const display = visible ? 'flex' : 'none';
+    if (topBar) setStyleIfChanged(topBar, 'display', display);
+    if (bottomBar) setStyleIfChanged(bottomBar, 'display', display);
+}
+
+function updateDOMHUDLayoutIfNeeded() {
+    const currentState = gameState.state;
+    const currentLevel = gameState.level;
+    const canvasSizeChanged = canvas.width !== lastCanvasWidth || canvas.height !== lastCanvasHeight;
+
+    if (currentState !== lastRenderedState || currentLevel !== lastRenderedLevel || canvasSizeChanged) {
+        domHUDLayoutDirty = true;
+    }
+
+    lastRenderedState = currentState;
+    lastRenderedLevel = currentLevel;
+    lastCanvasWidth = canvas.width;
+    lastCanvasHeight = canvas.height;
+
+    if (!domHUDLayoutDirty) return;
+
+    updateDOMHUDLayout();
+    domHUDLayoutDirty = false;
+}
+
 function updateDOMHUDLayout() {
-    const topBar = document.getElementById('top-bar');
-    const bottomBar = document.getElementById('bottom-bar');
+    const { topBar, bottomBar } = hudElements;
     if (!topBar && !bottomBar) return;
 
     const showGameplayHUD = shouldRenderGameplayHUD(gameState);
-    if (topBar) {
-        topBar.style.display = showGameplayHUD ? 'flex' : 'none';
+    if (lastDOMHUDLayout.visible !== showGameplayHUD) {
+        updateDOMHUDVisibility(topBar, bottomBar, showGameplayHUD);
+        lastDOMHUDLayout.visible = showGameplayHUD;
     }
-    if (bottomBar) {
-        bottomBar.style.display = showGameplayHUD ? 'flex' : 'none';
+    if (!showGameplayHUD) {
+        return;
     }
-    if (!showGameplayHUD) return;
 
     const rect = getLevelScreenRect();
     const domHUDLayout = createDOMHUDLayout(rect, {
@@ -120,24 +188,36 @@ function updateDOMHUDLayout() {
         height: window.innerHeight
     }, isMobile);
 
+    const nextLayout = {
+        left: `${domHUDLayout.left}px`,
+        right: `${domHUDLayout.right}px`,
+        bottom: domHUDLayout.bottom,
+        top: `${domHUDLayout.top}px`
+    };
+
     if (topBar) {
-        topBar.style.left = `${domHUDLayout.left}px`;
-        topBar.style.right = `${domHUDLayout.right}px`;
+        if (lastDOMHUDLayout.left !== nextLayout.left) setStyleIfChanged(topBar, 'left', nextLayout.left);
+        if (lastDOMHUDLayout.right !== nextLayout.right) setStyleIfChanged(topBar, 'right', nextLayout.right);
     }
 
     if (bottomBar) {
-        bottomBar.style.left = `${domHUDLayout.left}px`;
-        bottomBar.style.right = `${domHUDLayout.right}px`;
-        bottomBar.style.bottom = domHUDLayout.bottom;
-        bottomBar.style.top = `${domHUDLayout.top}px`;
+        if (lastDOMHUDLayout.left !== nextLayout.left) setStyleIfChanged(bottomBar, 'left', nextLayout.left);
+        if (lastDOMHUDLayout.right !== nextLayout.right) setStyleIfChanged(bottomBar, 'right', nextLayout.right);
+        if (lastDOMHUDLayout.bottom !== nextLayout.bottom) setStyleIfChanged(bottomBar, 'bottom', nextLayout.bottom);
+        if (lastDOMHUDLayout.top !== nextLayout.top) setStyleIfChanged(bottomBar, 'top', nextLayout.top);
     }
+
+    lastDOMHUDLayout = {
+        visible: showGameplayHUD,
+        ...nextLayout
+    };
 }
 
 // Render game elements
 export function render() {
     const currentLevel = getCurrentLevel();
     const isSpaceLevel = currentLevel && currentLevel.backgroundType === 'space';
-    updateDOMHUDLayout();
+    updateDOMHUDLayoutIfNeeded();
 
     renderBackgroundForCurrentLevel({ ctx, canvas, isSpaceLevel, spaceStars });
     if (renderBlockingScreenIfNeeded()) return;
