@@ -3,7 +3,7 @@
 
 import { gameState, isShowLevelSelect } from './game-state.js';
 import { getShip, getTouchState } from './ship-physics.js';
-import { getWalls, getPlatforms, getMaxScore, getLevelTemplates, getCurrentLevel, getLevelBounds } from './level-manager.js';
+import { getWalls, getPlatforms, getMaxScore, getLevelTemplates, getCurrentLevel, getLevelBounds, shouldUseSideScrollingForCurrentLevel } from './level-manager.js';
 import { isMobile, menu, pauseMenu, levelSelectMenu } from './ui.js';
 import { asteroidManager } from './asteroid-manager.js';
 import { renderGameplayHUD, triggerScoreUpdate as triggerHUDScoreUpdate } from './hud-renderer.js';
@@ -30,6 +30,7 @@ import {
     createLevelScreenRect,
     shouldRenderGameplayHUD
 } from './renderer-layout.js';
+import { getCameraState, getSceneTransform, resetCamera, updateCamera, worldToScreen } from './camera.js';
 
 // Canvas setup
 const canvas = document.getElementById('gameCanvas');
@@ -59,7 +60,12 @@ let lastDOMHUDLayout = {
     left: null,
     right: null,
     top: null,
-    bottom: null
+    bottom: null,
+    placement: null
+};
+let lastAdaptiveHUDState = {
+    insidePlayfield: null,
+    shipNearHUD: null
 };
 let lastRenderedState = null;
 let lastRenderedLevel = null;
@@ -112,10 +118,39 @@ export function getContext() {
 }
 
 function getGameplayHUDLayout() {
+    const sceneTransform = getCameraState();
+    if (sceneTransform.active) {
+        return createGameplayHUDLayout({
+            left: 0,
+            top: 0,
+            right: canvas.width,
+            bottom: canvas.height,
+            width: canvas.width,
+            height: canvas.height
+        }, isMobile);
+    }
+
     return createGameplayHUDLayout(getLevelBounds(), isMobile);
 }
 
 function getLevelScreenRect() {
+    const sceneTransform = getCameraState();
+    if (sceneTransform.active) {
+        const canvasRect = canvas.getBoundingClientRect();
+        const containerRect = hudElements.container
+            ? hudElements.container.getBoundingClientRect()
+            : { left: 0, top: 0 };
+
+        return {
+            left: canvasRect.left - containerRect.left,
+            top: canvasRect.top - containerRect.top,
+            right: canvasRect.left - containerRect.left + canvasRect.width,
+            bottom: canvasRect.top - containerRect.top + canvasRect.height,
+            width: canvasRect.width,
+            height: canvasRect.height
+        };
+    }
+
     const bounds = getLevelBounds();
     const canvasRect = canvas.getBoundingClientRect();
     const containerRect = hudElements.container
@@ -149,6 +184,12 @@ function updateDOMHUDVisibility(topBar, bottomBar, visible) {
     if (bottomBar) setStyleIfChanged(bottomBar, 'display', display);
 }
 
+function setClassIfChanged(element, className, enabled) {
+    if (element.classList.contains(className) !== enabled) {
+        element.classList.toggle(className, enabled);
+    }
+}
+
 function updateDOMHUDLayoutIfNeeded() {
     const currentState = gameState.state;
     const currentLevel = gameState.level;
@@ -179,6 +220,7 @@ function updateDOMHUDLayout() {
         lastDOMHUDLayout.visible = showGameplayHUD;
     }
     if (!showGameplayHUD) {
+        updateAdaptiveDOMHUDState(false, false);
         return;
     }
 
@@ -192,7 +234,8 @@ function updateDOMHUDLayout() {
         left: `${domHUDLayout.left}px`,
         right: `${domHUDLayout.right}px`,
         bottom: domHUDLayout.bottom,
-        top: `${domHUDLayout.top}px`
+        top: `${domHUDLayout.top}px`,
+        placement: domHUDLayout.placement
     };
 
     if (topBar) {
@@ -211,19 +254,66 @@ function updateDOMHUDLayout() {
         visible: showGameplayHUD,
         ...nextLayout
     };
+
+    updateAdaptiveDOMHUDForCurrentFrame();
+}
+
+function updateAdaptiveDOMHUDForCurrentFrame() {
+    const insidePlayfield = shouldRenderGameplayHUD(gameState) &&
+        lastDOMHUDLayout.placement === 'inside-top';
+    const shipNearHUD = insidePlayfield && isShipNearTopHUD();
+    updateAdaptiveDOMHUDState(insidePlayfield, shipNearHUD);
+}
+
+function updateAdaptiveDOMHUDState(insidePlayfield, shipNearHUD) {
+    const { bottomBar } = hudElements;
+    if (!bottomBar) return;
+
+    if (lastAdaptiveHUDState.insidePlayfield !== insidePlayfield) {
+        setClassIfChanged(bottomBar, 'hud-inside-playfield', insidePlayfield);
+        lastAdaptiveHUDState.insidePlayfield = insidePlayfield;
+    }
+
+    if (lastAdaptiveHUDState.shipNearHUD !== shipNearHUD) {
+        setClassIfChanged(bottomBar, 'ship-near-hud', shipNearHUD);
+        lastAdaptiveHUDState.shipNearHUD = shipNearHUD;
+    }
+}
+
+function isShipNearTopHUD() {
+    const ship = getShip();
+    const shipScreenPosition = worldToScreen(ship.x, ship.y, getSceneTransform());
+    return shipScreenPosition.y < 150;
 }
 
 // Render game elements
 export function render() {
     const currentLevel = getCurrentLevel();
     const isSpaceLevel = currentLevel && currentLevel.backgroundType === 'space';
+    updateSceneCameraIfNeeded(currentLevel);
     updateDOMHUDLayoutIfNeeded();
+    updateAdaptiveDOMHUDForCurrentFrame();
 
     renderBackgroundForCurrentLevel({ ctx, canvas, isSpaceLevel, spaceStars });
     if (renderBlockingScreenIfNeeded()) return;
 
     renderLevelScene(isSpaceLevel);
     renderPauseOverlayIfNeeded();
+}
+
+function updateSceneCameraIfNeeded(currentLevel) {
+    if (!currentLevel || !shouldRenderLevelSceneForState()) {
+        resetCamera();
+        return;
+    }
+
+    updateCamera(getShip(), getLevelBounds(), canvas, shouldUseSideScrollingForCurrentLevel());
+}
+
+function shouldRenderLevelSceneForState() {
+    return gameState.state === 'playing' ||
+        gameState.state === 'paused' ||
+        gameState.state === 'exploding';
 }
 
 function renderBlockingScreenIfNeeded() {
@@ -275,7 +365,8 @@ function renderLevelScene(isSpaceLevel) {
         walls: getWalls(),
         platforms: getPlatforms(),
         ship: getShip(),
-        activeAsteroids: asteroidManager.getActiveAsteroids()
+        activeAsteroids: asteroidManager.getActiveAsteroids(),
+        sceneTransform: getSceneTransform()
     });
     renderGameplayOverlay();
 }
@@ -294,7 +385,8 @@ function renderGameplayOverlay() {
         renderTouchIndicator({
             ctx,
             ship: getShip(),
-            touchState: getTouchState()
+            touchState: getTouchState(),
+            sceneTransform: getSceneTransform()
         });
     }
 }

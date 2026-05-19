@@ -52,7 +52,8 @@ export function createDOMHUDLayout(levelScreenRect, viewportSize, isMobileDevice
             left,
             right,
             bottom: 'auto',
-            top: levelScreenRect.bottom + gap
+            top: levelScreenRect.bottom + gap,
+            placement: 'below-level'
         };
     }
 
@@ -60,6 +61,7 @@ export function createDOMHUDLayout(levelScreenRect, viewportSize, isMobileDevice
         left,
         right,
         bottom: 'auto',
-        top: levelScreenRect.top + fallbackTopOffset
+        top: levelScreenRect.top + fallbackTopOffset,
+        placement: 'inside-top'
     };
 }

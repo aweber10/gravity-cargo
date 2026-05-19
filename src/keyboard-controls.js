@@ -3,7 +3,7 @@
 
 import { gameState } from './game-state.js';
 import { setKeyState } from './ship-physics.js';
-import { togglePause, handleMenuSelection, handlePauseMenuSelection, handleTrainingLevelSelect, exitTrainingMode } from './game-flow.js';
+import { togglePause, handleMenuSelection, handlePauseMenuSelection, handleLevelSelect, exitLevelSelectMode } from './game-flow.js';
 import { getMaxLevelCount } from './level-manager.js';
 import { menu, pauseMenu, levelSelectMenu } from './ui-state.js';
 
@@ -94,18 +94,26 @@ function handleMenuNavigation(e) {
 }
 
 function handlePauseMenuNavigation(e) {
+    const enabledIndices = getEnabledPauseOptionIndices();
+    const normalizedCurrentPos = Math.max(0, enabledIndices.indexOf(pauseMenu.selectedOption));
     if (isUpKey(e)) {
         e.preventDefault();
-        pauseMenu.selectedOption = Math.max(0, pauseMenu.selectedOption - 1);
+        pauseMenu.selectedOption = enabledIndices[Math.max(0, normalizedCurrentPos - 1)];
     }
     if (isDownKey(e)) {
         e.preventDefault();
-        pauseMenu.selectedOption = Math.min(pauseMenu.options.length - 1, pauseMenu.selectedOption + 1);
+        pauseMenu.selectedOption = enabledIndices[Math.min(enabledIndices.length - 1, normalizedCurrentPos + 1)];
     }
     if (isConfirmKey(e)) {
         e.preventDefault();
         handlePauseMenuSelection();
     }
+}
+
+function getEnabledPauseOptionIndices() {
+    return pauseMenu.options
+        .map((option, index) => option.visible !== false ? index : -1)
+        .filter(index => index >= 0);
 }
 
 function handleLevelSelectNavigation(e) {
@@ -124,17 +132,17 @@ function handleLevelSelectNavigation(e) {
     if (e.key === 'Escape') {
         e.preventDefault();
         // Zurück zum Hauptmenü
-        exitTrainingMode();
+        exitLevelSelectMode();
     }
 }
 
 function handleLevelSelectSelection() {
-    handleTrainingLevelSelect(levelSelectMenu.selectedLevel);
+    handleLevelSelect(levelSelectMenu.selectedLevel);
 }
 
 function getEnabledMenuOptionIndices() {
     return menu.options
-        .map((option, index) => option.enabled ? index : -1)
+        .map((option, index) => option.enabled && option.visible !== false ? index : -1)
         .filter(index => index >= 0);
 }
 

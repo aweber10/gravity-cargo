@@ -6,9 +6,10 @@ import { getShip, setShipPosition, setShipVelocity, setShipAngle, setShipSettlin
 import { getCurrentLevel, getWalls, getPlatforms, initLevel, getMaxLevelCount } from './level-manager.js';
 import { playSound } from './audio.js?v=11';
 import { PHYSICS } from './config.js?v=11';
-import { exitTrainingMode } from './game-flow.js';
+import { exitLevelSelectMode, exitTrainingMode, finishScoreAttack, startNextScoreAttackLevel } from './game-flow.js';
 import { asteroidManager } from './asteroid-manager.js';
 import { stopLevelTimer, evaluateTime, startLevelTimer } from './time-attack.js';
+import { isScoreAttackMode } from './score-attack.js';
 
 // Create explosion effect
 export function createExplosion(x, y) {
@@ -170,6 +171,14 @@ export function explode() {
         if (gameState.trainingMode) {
             // In training mode: direct return to main menu
             exitTrainingMode();
+        } else if (isScoreAttackMode(gameState)) {
+            gameState.lives--;
+            if (gameState.lives <= 0) {
+                finishScoreAttack();
+            } else {
+                respawn();
+                gameState.state = 'playing';
+            }
         } else {
             // Normal game mode
             gameState.lives--;
@@ -243,6 +252,22 @@ function levelComplete() {
         // In training mode: direct return to main menu
         setTimeout(() => {
             exitTrainingMode();
+        }, 2000);
+        return;
+    }
+
+    if (gameState.mobileDesktopLevelTestMode) {
+        gameState.state = 'levelcomplete';
+        setTimeout(() => {
+            exitLevelSelectMode();
+        }, 2000);
+        return;
+    }
+
+    if (isScoreAttackMode(gameState)) {
+        gameState.state = 'levelcomplete';
+        setTimeout(() => {
+            startNextScoreAttackLevel();
         }, 2000);
         return;
     }

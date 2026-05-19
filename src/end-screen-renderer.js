@@ -2,6 +2,7 @@
 // Rendering for level-complete, game-over, and game-won screens
 
 import { formatTime, formatCompactTime, getLastResult, getCompactOverviewData } from './time-attack.js';
+import { getScoreAttackResult, isScoreAttackMode } from './score-attack.js';
 
 // Fireworks system for GameWon screen
 let fireworksState = {
@@ -58,6 +59,17 @@ export function renderLevelComplete({ ctx, canvas, gameState, isMobile, levelTem
     ctx.font = `${completeFontSize} "Courier New"`;
     ctx.textAlign = 'center';
     ctx.fillText('LEVEL COMPLETE!', canvas.width / 2, canvas.height * 0.45);
+
+    if (isScoreAttackMode(gameState)) {
+        ctx.font = '20px "Courier New"';
+        ctx.fillStyle = '#0ff';
+        ctx.fillText('PUNKTEJAGD', canvas.width / 2, canvas.height * 0.45 + 30);
+
+        ctx.font = '24px "Courier New"';
+        ctx.fillStyle = '#fff';
+        ctx.fillText(`SCORE: ${gameState.score}`, canvas.width / 2, canvas.height * 0.45 + 80);
+        return;
+    }
 
     // Show how far the player is through the campaign
     const completeTotalLevels = levelTemplates.length;
@@ -121,6 +133,8 @@ export function renderGameOver({ ctx, canvas, gameState, isMobile }) {
 
     if (gameState.mode === 'timeattack') {
         renderTimeAttackGameOverDetails({ ctx, canvas, gameState, isMobile });
+    } else if (isScoreAttackMode(gameState)) {
+        renderScoreAttackGameOverDetails({ ctx, canvas, isMobile });
     } else {
         // Normal mode: show score
         ctx.fillText(`SCORE: ${gameState.score}`, canvas.width / 2, canvas.height * 0.3 + (isMobile ? 80 : 100));
@@ -129,6 +143,25 @@ export function renderGameOver({ ctx, canvas, gameState, isMobile }) {
     ctx.font = isMobile ? '16px' : '20px';
     ctx.fillStyle = '#0ff';
     ctx.fillText('ENTER für Hauptmenü', canvas.width / 2, canvas.height - (isMobile ? 40 : 60));
+}
+
+function renderScoreAttackGameOverDetails({ ctx, canvas, isMobile }) {
+    const result = getScoreAttackResult();
+    const scoreY = canvas.height * 0.3 + (isMobile ? 80 : 100);
+
+    ctx.font = isMobile ? '24px' : '30px';
+    ctx.fillStyle = '#fff';
+    ctx.fillText(`SCORE: ${result.score}`, canvas.width / 2, scoreY);
+
+    ctx.font = isMobile ? '18px' : '22px';
+    ctx.fillStyle = '#0ff';
+    ctx.fillText(`BEST: ${result.highScore}`, canvas.width / 2, scoreY + (isMobile ? 35 : 42));
+
+    if (result.isNewHighScore) {
+        ctx.font = isMobile ? '18px' : '22px';
+        ctx.fillStyle = '#0f0';
+        ctx.fillText('NEUER REKORD', canvas.width / 2, scoreY + (isMobile ? 68 : 78));
+    }
 }
 
 function renderTimeAttackGameOverDetails({ ctx, canvas, gameState, isMobile }) {

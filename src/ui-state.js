@@ -7,7 +7,7 @@ export const menu = {
     options: [
         { id: 'newgame', label: 'NEUES SPIEL', enabled: true, bounds: null },
         { id: 'timeattack', label: 'ZEITRENNEN', enabled: true, bounds: null },
-        { id: 'training', label: 'TRAINING', enabled: true, bounds: null },
+        { id: 'scoreattack', label: 'PUNKTEJAGD', enabled: true, visible: false, bounds: null },
         { id: 'continue', label: 'FORTSETZEN', enabled: false, bounds: null }
     ]
 };

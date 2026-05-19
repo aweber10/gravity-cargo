@@ -3,6 +3,7 @@
 
 import { getMaxLevelCount } from './level-manager.js';
 import { isMobile } from './device-detection.js';
+import { getLevelModeStorageSuffix } from './level-mode.js';
 
 // Zeitrennen State
 export const timeAttackState = {
@@ -32,7 +33,7 @@ export const timeAttackState = {
 
 // Storage-Key basierend auf Plattform
 function getStorageKey() {
-    const platform = isMobile ? 'mobile' : 'desktop';
+    const platform = getLevelModeStorageSuffix(isMobile);
     return `gravityCargoTimeAttack_${platform}`;
 }
 

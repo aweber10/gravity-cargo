@@ -3,7 +3,8 @@
 
 import { gameState } from './game-state.js';
 import { setTouchState, getTouchState } from './ship-physics.js';
-import { togglePause, handleMenuSelection, handlePauseMenuSelection, handleTrainingLevelSelect, exitTrainingMode } from './game-flow.js';
+import { screenToWorld } from './camera.js';
+import { togglePause, handleMenuSelection, handlePauseMenuSelection, handleLevelSelect, exitLevelSelectMode } from './game-flow.js';
 import { menu, pauseMenu, levelSelectMenu } from './ui-state.js';
 import {
     getLevelSelectOptionAtPosition,
@@ -34,7 +35,7 @@ export function setupTouchControls({ initMenu }) {
         }
 
         if (gameState.state === 'playing') {
-            const touchPosition = getTouchPosition(e, canvas);
+            const touchPosition = getGameplayTouchPosition(e, canvas);
             setTouchState(true, touchPosition.x, touchPosition.y);
         }
     });
@@ -43,7 +44,7 @@ export function setupTouchControls({ initMenu }) {
         e.preventDefault();
 
         if (gameState.state === 'playing' && getTouchState().active) {
-            const touchPosition = getTouchPosition(e, canvas);
+            const touchPosition = getGameplayTouchPosition(e, canvas);
             setTouchState(true, touchPosition.x, touchPosition.y);
         }
     });
@@ -145,16 +146,21 @@ function selectLevelAtPosition(x, y) {
     const selectedLevel = getLevelSelectOptionAtPosition(x, y);
     if (selectedLevel > 0) {
         levelSelectMenu.selectedLevel = selectedLevel;
-        handleTrainingLevelSelect(levelSelectMenu.selectedLevel);
+        handleLevelSelect(levelSelectMenu.selectedLevel);
     } else if (selectedLevel === -1) {
         // Zurück button
-        exitTrainingMode();
+        exitLevelSelectMode();
     }
 }
 
 function getTouchPosition(e, canvas) {
     const touch = e.touches[0];
     return getClientPosition(touch, canvas);
+}
+
+function getGameplayTouchPosition(e, canvas) {
+    const screenPosition = getTouchPosition(e, canvas);
+    return screenToWorld(screenPosition.x, screenPosition.y);
 }
 
 function getPointerPosition(e, canvas) {

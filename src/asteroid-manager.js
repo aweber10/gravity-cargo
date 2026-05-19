@@ -1,6 +1,14 @@
 // asteroid-manager.js - Asteroid movement and management system
 
 // Generate irregular asteroid shape
+export function isAsteroidOffscreenPosition(x, y, levelBounds, buffer = 100) {
+    const bounds = levelBounds || { left: 0, top: 0, right: 800, bottom: 700 };
+    return x < bounds.left - buffer ||
+        x > bounds.right + buffer ||
+        y < bounds.top - buffer ||
+        y > bounds.bottom + buffer;
+}
+
 function generateIrregularPolygon(baseSize) {
     const points = [];
     const numPoints = 8 + Math.floor(Math.random() * 4); // 8-11 points
@@ -21,7 +29,7 @@ function generateIrregularPolygon(baseSize) {
 }
 
 class Asteroid {
-    constructor(config) {
+    constructor(config, levelBounds) {
         this.spawn = config.spawn;
         this.x = config.spawn[0];
         this.y = config.spawn[1];
@@ -32,6 +40,7 @@ class Asteroid {
         this.shape = generateIrregularPolygon(config.size);
         this.active = false;
         this.spawnTime = performance.now() + config.delay;
+        this.levelBounds = levelBounds;
     }
     
     update(dt) {
@@ -46,14 +55,14 @@ class Asteroid {
             this.y += this.vy * dt / 1000;
             
             // Despawn when asteroid moves off screen with buffer
-            if (this.x < -100 || this.x > 900 || this.y < -100 || this.y > 800) {
+            if (this.isOffscreen()) {
                 this.active = false;
             }
         }
     }
     
     isOffscreen() {
-        return this.x < -100 || this.x > 900 || this.y < -100 || this.y > 800;
+        return isAsteroidOffscreenPosition(this.x, this.y, this.levelBounds);
     }
 }
 
@@ -65,12 +74,14 @@ export const asteroidManager = {
     cycleStartTime: 0,
     maxActiveAsteroids: 2,
     usesCyclicPattern: false,
+    levelBounds: null,
     
     // Initialize asteroids for a level
-    initLevel(levelData) {
+    initLevel(levelData, levelBounds = null) {
         this.asteroids = [];
         this.patternIndex = 0;
         this.cycleStartTime = performance.now();
+        this.levelBounds = levelBounds;
         
         // Check if level uses new cyclic asteroid patterns
         if (levelData.asteroidPattern) {
@@ -80,7 +91,7 @@ export const asteroidManager = {
         } else if (levelData.asteroids) {
             // Fallback to old single-spawn system
             this.usesCyclicPattern = false;
-            this.asteroids = levelData.asteroids.map(config => new Asteroid(config));
+            this.asteroids = levelData.asteroids.map(config => new Asteroid(config, this.levelBounds));
         }
     },
     
@@ -123,7 +134,7 @@ export const asteroidManager = {
                     velocity: patternConfig.velocity,
                     size: patternConfig.size,
                     delay: 0 // Spawn immediately since timing is handled here
-                });
+                }, this.levelBounds);
                 newAsteroid.active = true;
                 this.asteroids.push(newAsteroid);
             }

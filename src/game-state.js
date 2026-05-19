@@ -6,7 +6,7 @@ import { triggerScoreUpdate } from './renderer.js';
 // Game State
 export const gameState = {
     state: 'menu', // menu, playing, paused, levelcomplete, gameover, gamewon, levelselect
-    mode: 'normal', // normal, timeattack, training
+    mode: 'normal', // normal, timeattack, training, scoreattack
     score: 0,
     lives: 3,
     level: 1,
@@ -22,6 +22,9 @@ export const gameState = {
     // Training mode variables
     trainingMode: false,
     trainingLevel: 1,
+    mobileDesktopLevelTestMode: false,
+    scoreAttackMode: false,
+    levelSelectMode: null,
     showLevelSelect: false
 };
 
@@ -50,6 +53,9 @@ export function resetGameState() {
     gameState.levelStartScore = 0;
     gameState.trainingMode = false;
     gameState.trainingLevel = 1;
+    gameState.mobileDesktopLevelTestMode = false;
+    gameState.scoreAttackMode = false;
+    gameState.levelSelectMode = null;
     gameState.showLevelSelect = false;
 }
 

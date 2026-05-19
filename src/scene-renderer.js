@@ -25,8 +25,11 @@ export function renderBackgroundForCurrentLevel({ ctx, canvas, isSpaceLevel, spa
     }
 }
 
-export function renderLevelScene({ ctx, gameState, isSpaceLevel, walls, platforms, ship, activeAsteroids }) {
+import { worldToScreen } from './camera.js';
+
+export function renderLevelScene({ ctx, gameState, isSpaceLevel, walls, platforms, ship, activeAsteroids, sceneTransform }) {
     ctx.save();
+    applySceneTransform(ctx, sceneTransform);
 
     renderWalls(ctx, walls, isSpaceLevel);
     renderAsteroidsIfNeeded(ctx, isSpaceLevel, activeAsteroids);
@@ -37,19 +40,28 @@ export function renderLevelScene({ ctx, gameState, isSpaceLevel, walls, platform
     ctx.restore();
 }
 
-export function renderTouchIndicator({ ctx, ship, touchState }) {
+export function renderTouchIndicator({ ctx, ship, touchState, sceneTransform }) {
     if (touchState.active) {
+        const shipScreenPosition = worldToScreen(ship.x, ship.y, sceneTransform);
+        const touchScreenPosition = worldToScreen(touchState.x, touchState.y, sceneTransform);
+
         ctx.save();
         ctx.setLineDash([5, 5]);
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(ship.x, ship.y);
-        ctx.lineTo(touchState.x, touchState.y);
+        ctx.moveTo(shipScreenPosition.x, shipScreenPosition.y);
+        ctx.lineTo(touchScreenPosition.x, touchScreenPosition.y);
         ctx.stroke();
         ctx.setLineDash([]);
         ctx.restore();
     }
+}
+
+function applySceneTransform(ctx, sceneTransform) {
+    if (!sceneTransform || !sceneTransform.active) return;
+    ctx.scale(sceneTransform.scale, sceneTransform.scale);
+    ctx.translate(-sceneTransform.x, -sceneTransform.y);
 }
 
 // Render walls
