@@ -79,8 +79,11 @@ export const asteroidManager = {
     // Initialize asteroids for a level
     initLevel(levelData, levelBounds = null) {
         this.asteroids = [];
+        this.asteroidPattern = [];
         this.patternIndex = 0;
         this.cycleStartTime = performance.now();
+        this.maxActiveAsteroids = 2;
+        this.usesCyclicPattern = false;
         this.levelBounds = levelBounds;
         
         // Check if level uses new cyclic asteroid patterns
