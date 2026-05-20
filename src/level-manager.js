@@ -116,6 +116,10 @@ export function shouldUseSideScrollingForCurrentLevel() {
     return isMobile && currentLevelSource === LEVEL_SOURCES.DESKTOP;
 }
 
+export function shouldFitCurrentLevelToViewport() {
+    return isMobile && currentLevelSource === LEVEL_SOURCES.MOBILE;
+}
+
 function initializeCurrentLevel({ preserveLives = false } = {}) {
     gameState.fuel = currentLevel.fuel;
     gameState.maxFuel = currentLevel.fuel;

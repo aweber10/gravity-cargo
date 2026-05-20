@@ -3,7 +3,7 @@
 
 import { gameState, isShowLevelSelect } from './game-state.js';
 import { getShip, getTouchState } from './ship-physics.js';
-import { getWalls, getPlatforms, getMaxScore, getLevelTemplates, getCurrentLevel, getLevelBounds, shouldUseSideScrollingForCurrentLevel } from './level-manager.js';
+import { getWalls, getPlatforms, getMaxScore, getLevelTemplates, getCurrentLevel, getLevelBounds, shouldFitCurrentLevelToViewport, shouldUseSideScrollingForCurrentLevel } from './level-manager.js';
 import { isMobile, menu, pauseMenu, levelSelectMenu } from './ui.js';
 import { asteroidManager } from './asteroid-manager.js';
 import { renderGameplayHUD, triggerScoreUpdate as triggerHUDScoreUpdate } from './hud-renderer.js';
@@ -307,13 +307,19 @@ function updateSceneCameraIfNeeded(currentLevel) {
         return;
     }
 
-    updateCamera(getShip(), getLevelBounds(), canvas, shouldUseSideScrollingForCurrentLevel());
+    updateCamera(getShip(), getLevelBounds(), canvas, getCameraModeForCurrentLevel());
 }
 
 function shouldRenderLevelSceneForState() {
     return gameState.state === 'playing' ||
         gameState.state === 'paused' ||
         gameState.state === 'exploding';
+}
+
+function getCameraModeForCurrentLevel() {
+    if (shouldUseSideScrollingForCurrentLevel()) return 'side-scroll';
+    if (shouldFitCurrentLevelToViewport()) return 'contain';
+    return 'none';
 }
 
 function renderBlockingScreenIfNeeded() {

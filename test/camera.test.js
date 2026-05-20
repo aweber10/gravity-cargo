@@ -62,3 +62,36 @@ test('inactive camera uses identity transforms and full level bounds', () => {
     assert.deepEqual(worldToScreen(120, 140), { x: 120, y: 140 });
     assert.deepEqual(getVisibleWorldBounds(), levelBounds);
 });
+
+test('contain camera scales level proportionally and centers it', () => {
+    const camera = updateCamera(
+        { x: 100, y: 300 },
+        { left: 0, top: 0, right: 375, bottom: 667, width: 375, height: 667 },
+        { width: 768, height: 1024 },
+        'contain'
+    );
+
+    const expectedScale = 1024 / 667;
+    const expectedRenderedWidth = 375 * expectedScale;
+
+    assert.equal(camera.active, true);
+    assert.equal(camera.mode, 'contain');
+    assert.equal(camera.scale, expectedScale);
+    assert.equal(camera.offsetX, (768 - expectedRenderedWidth) / 2);
+    assert.equal(camera.offsetY, 0);
+});
+
+test('contain camera screen and world transforms round-trip with offsets', () => {
+    updateCamera(
+        { x: 100, y: 300 },
+        { left: 0, top: 0, right: 375, bottom: 667, width: 375, height: 667 },
+        { width: 768, height: 1024 },
+        'contain'
+    );
+
+    const screenPoint = worldToScreen(187.5, 333.5);
+    const worldPoint = screenToWorld(screenPoint.x, screenPoint.y);
+
+    assert.equal(Math.round(worldPoint.x * 10) / 10, 187.5);
+    assert.equal(Math.round(worldPoint.y * 10) / 10, 333.5);
+});
