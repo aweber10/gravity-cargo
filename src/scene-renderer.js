@@ -60,6 +60,7 @@ export function renderTouchIndicator({ ctx, ship, touchState, sceneTransform }) 
 
 function applySceneTransform(ctx, sceneTransform) {
     if (!sceneTransform || !sceneTransform.active) return;
+    ctx.translate(sceneTransform.offsetX, sceneTransform.offsetY);
     ctx.scale(sceneTransform.scale, sceneTransform.scale);
     ctx.translate(-sceneTransform.x, -sceneTransform.y);
 }
